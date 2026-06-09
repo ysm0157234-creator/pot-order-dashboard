@@ -1,0 +1,17 @@
+{
+  "name": "pot-order-dashboard",
+  "version": "1.0.0",
+  "description": "화분/상토 발주 제안 대시보드",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "xlsx": "^0.18.5"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

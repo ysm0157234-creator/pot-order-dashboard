@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>화분·상토 발주 대시보드</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f8; color: #222; }
+    header { background: #1f2937; color: #fff; padding: 24px 32px; }
+    h1 { margin: 0 0 8px; font-size: 26px; }
+    .wrap { padding: 24px 32px; }
+    .cards { display: grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 14px; margin-bottom: 20px; }
+    .card { background: #fff; border-radius: 12px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+    .card b { display: block; font-size: 24px; margin-top: 8px; }
+    .toolbar { display: flex; gap: 10px; margin-bottom: 14px; }
+    input, select { padding: 11px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+    input { flex: 1; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+    th, td { padding: 12px 10px; border-bottom: 1px solid #eee; text-align: right; white-space: nowrap; }
+    th { background: #111827; color: #fff; position: sticky; top: 0; }
+    th:first-child, td:first-child { text-align: left; }
+    tr.danger { background: #ffe5e5; }
+    tr.warning { background: #fff6d9; }
+    tr.safe { background: #eefcf1; }
+    tr.none { background: #f1f1f1; }
+    .status { font-weight: 700; }
+    @media (max-width: 900px) { .cards { grid-template-columns: repeat(2, 1fr); } .table-box { overflow-x: auto; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>화분·상토 발주 대시보드</h1>
+    <div>기준: 현재고 + 인보이스 입고예정 - 작년 하반기 판매량</div>
+  </header>
+
+  <div class="wrap">
+    <div class="cards">
+      <div class="card">🔴 즉시발주 <b id="danger">-</b></div>
+      <div class="card">🟡 주의 <b id="warning">-</b></div>
+      <div class="card">🟢 안전 <b id="safe">-</b></div>
+      <div class="card">총 부족 예상 <b id="shortage">-</b></div>
+    </div>
+
+    <div class="toolbar">
+      <input id="search" placeholder="품목명 검색 예: 코스모 110" />
+      <select id="statusFilter">
+        <option value="all">전체</option>
+        <option value="즉시">즉시발주</option>
+        <option value="주의">주의</option>
+        <option value="안전">안전</option>
+      </select>
+    </div>
+
+    <div class="table-box">
+      <table>
+        <thead>
+          <tr>
+            <th>품목</th>
+            <th>현재고</th>
+            <th>입고예정</th>
+            <th>가용수량</th>
+            <th>작년 하반기 판매</th>
+            <th>남는/부족</th>
+            <th>커버율</th>
+            <th>상태</th>
+            <th>추천</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let inventory = [];
+
+    const fmt = (n) => Number(n || 0).toLocaleString();
+
+    function rowClass(status) {
+      if (status.includes("즉시")) return "danger";
+      if (status.includes("주의")) return "warning";
+      if (status.includes("안전")) return "safe";
+      return "none";
+    }
+
+    function render() {
+      const keyword = document.getElementById("search").value.trim();
+      const filter = document.getElementById("statusFilter").value;
+      const tbody = document.getElementById("tbody");
+
+      const rows = inventory.filter(item => {
+        const matchKeyword = !keyword || item.productName.includes(keyword);
+        const matchStatus = filter === "all" || item.status.includes(filter);
+        return matchKeyword && matchStatus;
+      });
+
+      tbody.innerHTML = rows.map(item => `
+        <tr class="${rowClass(item.status)}">
+          <td>${item.productName}</td>
+          <td>${fmt(item.currentStock)}</td>
+          <td>${fmt(item.incomingStock)}</td>
+          <td>${fmt(item.availableStock)}</td>
+          <td>${fmt(item.pastSales)}</td>
+          <td>${fmt(item.balance)}</td>
+          <td>${item.coverRate === null ? "-" : item.coverRate + "배"}</td>
+          <td class="status">${item.status}</td>
+          <td>${item.recommendation}</td>
+        </tr>
+      `).join("");
+    }
+
+    async function load() {
+      const [summaryRes, inventoryRes] = await Promise.all([
+        fetch("/api/summary"),
+        fetch("/api/inventory")
+      ]);
+      const summary = await summaryRes.json();
+      inventory = await inventoryRes.json();
+
+      document.getElementById("danger").textContent = summary.danger;
+      document.getElementById("warning").textContent = summary.warning;
+      document.getElementById("safe").textContent = summary.safe;
+      document.getElementById("shortage").textContent = fmt(summary.totalShortage);
+      render();
+    }
+
+    document.getElementById("search").addEventListener("input", render);
+    document.getElementById("statusFilter").addEventListener("change", render);
+    load();
+  </script>
+</body>
+</html>
