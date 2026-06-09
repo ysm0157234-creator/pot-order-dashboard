@@ -1,106 +1,135 @@
 const express = require("express");
-const XLSX = require("xlsx");
 const cors = require("cors");
-const path = require("path");
+const axios = require("axios");
+const { parse } = require("csv-parse/sync");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
 app.use(cors());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static("public"));
 
-const FILE_PATH = path.join(__dirname, "data", "inventory.xlsx");
+const SHEET_ID = "1mDjPwVt5o44DY-63I3uScK58WUADvpe_GSCDFtld4rw";
 
-function toNumber(value) {
-  if (value === null || value === undefined || value === "") return 0;
-  if (typeof value === "number") return value;
-  const cleaned = String(value).replace(/,/g, "").trim();
-  const num = Number(cleaned);
-  return Number.isFinite(num) ? num : 0;
+const SALES_SHEET = "판매량";
+const STOCK_SHEET = "재고";
+
+function num(v) {
+  if (v === undefined || v === null || v === "") return 0;
+  return Number(String(v).replace(/,/g, "").replace(/[^\d.-]/g, "")) || 0;
 }
 
-function readInventoryExcel() {
-  const workbook = XLSX.readFile(FILE_PATH);
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+async function readSheet(sheetName) {
+  const url =
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
 
-  return rows.map((row) => {
-    const productName = row["화분 크기"] || row["품목명"] || row["품목"] || "";
-    const currentStock = toNumber(row["재고현황"] || row["현재고"] || row["재고"]);
-    const incomingStock = toNumber(row["3, 4월 인보이스 합계 수량"] || row["인보이스 합계 수량"] || row["입고예정"]);
-    const pastSales = toNumber(row["작년(25.06.01~25.12.01) 판매량"] || row["작년 하반기 판매량"] || row["예상판매량"]);
-    const orderSuggestion = row["발주제안량"] || "";
-
-    const availableStock = currentStock + incomingStock;
-    const balance = availableStock - pastSales;
-    const coverRate = pastSales > 0 ? availableStock / pastSales : null;
-
-    let status = "🟢 안전";
-    let priority = 3;
-    let recommendation = "발주 보류";
-
-    if (balance < 0) {
-      status = "🔴 즉시발주";
-      priority = 1;
-      recommendation = `최소 ${Math.ceil(Math.abs(balance)).toLocaleString()}개 부족 예상`;
-    } else if (coverRate !== null && coverRate < 1.3) {
-      status = "🟡 주의";
-      priority = 2;
-      recommendation = "추가 발주 검토";
-    } else if (pastSales === 0 && availableStock === 0) {
-      status = "⚪ 데이터없음";
-      priority = 4;
-      recommendation = "판매이력/재고 확인 필요";
-    }
-
-    if (orderSuggestion) {
-      recommendation += ` / 기존 제안: ${orderSuggestion}`;
-    }
-
-    return {
-      productName,
-      currentStock,
-      incomingStock,
-      availableStock,
-      pastSales,
-      balance,
-      coverRate: coverRate === null ? null : Number(coverRate.toFixed(2)),
-      status,
-      priority,
-      recommendation,
-    };
-  }).filter((item) => item.productName);
+  const res = await axios.get(url);
+  return parse(res.data, {
+    columns: true,
+    skip_empty_lines: true,
+    bom: true
+  });
 }
 
-app.get("/api/inventory", (req, res) => {
+function latestMonthColumns(row) {
+  return Object.keys(row).filter(k =>
+    /^\d{4}[/-]\d{1,2}$/.test(k)
+  );
+}
+
+app.get("/api/inventory", async (req, res) => {
   try {
-    const data = readInventoryExcel().sort((a, b) => {
-      if (a.priority !== b.priority) return a.priority - b.priority;
-      return a.balance - b.balance;
+    const salesRows = await readSheet(SALES_SHEET);
+    const stockRows = await readSheet(STOCK_SHEET);
+
+    const salesMap = {};
+
+    salesRows.forEach(row => {
+      const name = row["품목별"] || row["품목명"] || row["품목"];
+      if (!name || name.includes("총합계")) return;
+
+      const months = latestMonthColumns(row);
+      const recentMonths = months.slice(-6);
+
+      const recentTotal = recentMonths.reduce((sum, m) => sum + num(row[m]), 0);
+      const avgMonthlySales = recentMonths.length ? recentTotal / recentMonths.length : 0;
+
+      salesMap[name.trim()] = {
+        avgMonthlySales,
+        months
+      };
     });
-    res.json(data);
-  } catch (error) {
+
+    const result = stockRows.map(row => {
+      const name = row["품목명"] || row["화분 크기"] || row["품목"];
+      if (!name) return null;
+
+      const productName = name.trim();
+
+      const currentStock = num(row["현재고"]);
+      const incomingStock = num(row["입고예정"]);
+      const leadTime = num(row["리드타임"]) || 90;
+      const manualOrder = row["발주제안"] || "";
+
+      const sales = salesMap[productName];
+      const avgMonthlySales = sales ? sales.avgMonthlySales : num(row["작년판매"]) / 6;
+
+      const availableStock = currentStock + incomingStock;
+      const expectedSalesDuringLeadTime = avgMonthlySales / 30 * leadTime;
+      const safetyStock = avgMonthlySales;
+      const shortage = Math.ceil(expectedSalesDuringLeadTime + safetyStock - availableStock);
+
+      const daysLeft = avgMonthlySales > 0
+        ? Math.round(availableStock / (avgMonthlySales / 30))
+        : 9999;
+
+      let status = "🟢 안전";
+      let action = "발주 보류";
+
+      if (shortage > 0) {
+        status = "🔴 즉시발주";
+        action = `최소 ${shortage.toLocaleString()}개 부족 예상`;
+      } else if (daysLeft <= leadTime + 30) {
+        status = "🟡 주의";
+        action = "30일 내 발주 검토";
+      }
+
+      if (manualOrder) {
+        action += ` / 기존 제안: ${manualOrder}`;
+      }
+
+      return {
+        productName,
+        currentStock,
+        incomingStock,
+        availableStock,
+        avgMonthlySales: Math.round(avgMonthlySales),
+        leadTime,
+        expectedSalesDuringLeadTime: Math.round(expectedSalesDuringLeadTime),
+        safetyStock: Math.round(safetyStock),
+        daysLeft,
+        shortage: Math.max(0, shortage),
+        status,
+        action
+      };
+    }).filter(Boolean);
+
+    result.sort((a, b) => {
+      const order = {
+        "🔴 즉시발주": 1,
+        "🟡 주의": 2,
+        "🟢 안전": 3
+      };
+      return order[a.status] - order[b.status];
+    });
+
+    res.json(result);
+  } catch (err) {
     res.status(500).json({
-      error: "엑셀 분석 실패",
-      message: error.message,
-      hint: "data/inventory.xlsx 파일명이 맞는지 확인하세요.",
+      error: "구글시트 연동 실패",
+      message: err.message
     });
   }
 });
 
-app.get("/api/summary", (req, res) => {
-  try {
-    const data = readInventoryExcel();
-    const danger = data.filter((x) => x.status.includes("즉시")).length;
-    const warning = data.filter((x) => x.status.includes("주의")).length;
-    const safe = data.filter((x) => x.status.includes("안전")).length;
-    const totalShortage = data.reduce((sum, x) => sum + (x.balance < 0 ? Math.abs(x.balance) : 0), 0);
-    res.json({ danger, warning, safe, totalShortage: Math.ceil(totalShortage), totalItems: data.length });
-  } catch (error) {
-    res.status(500).json({ error: "요약 실패", message: error.message });
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`발주 대시보드 실행: http://localhost:${PORT}`);
+app.listen(process.env.PORT || 3000, () => {
+  console.log("구글시트 연동 발주 대시보드 실행 중");
 });
