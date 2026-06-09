@@ -17,12 +17,11 @@
     input { flex: 1; }
     table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
     th, td { padding: 12px 10px; border-bottom: 1px solid #eee; text-align: right; white-space: nowrap; }
-    th { background: #111827; color: #fff; position: sticky; top: 0; }
+    th { background: #111827; color: #fff; }
     th:first-child, td:first-child { text-align: left; }
     tr.danger { background: #ffe5e5; }
     tr.warning { background: #fff6d9; }
     tr.safe { background: #eefcf1; }
-    tr.none { background: #f1f1f1; }
     .status { font-weight: 700; }
     @media (max-width: 900px) { .cards { grid-template-columns: repeat(2, 1fr); } .table-box { overflow-x: auto; } }
   </style>
@@ -30,7 +29,7 @@
 <body>
   <header>
     <h1>화분·상토 발주 대시보드</h1>
-    <div>기준: 현재고 + 인보이스 입고예정 - 작년 하반기 판매량</div>
+    <div>기준: 현재고 + 입고예정 - 리드타임 예상판매 - 안전재고</div>
   </header>
 
   <div class="wrap">
@@ -42,7 +41,7 @@
     </div>
 
     <div class="toolbar">
-      <input id="search" placeholder="품목명 검색 예: 코스모 110" />
+      <input id="search" placeholder="품목명 검색 예: 코스모포트 블랙110L" />
       <select id="statusFilter">
         <option value="all">전체</option>
         <option value="즉시">즉시발주</option>
@@ -59,9 +58,12 @@
             <th>현재고</th>
             <th>입고예정</th>
             <th>가용수량</th>
-            <th>작년 하반기 판매</th>
-            <th>남는/부족</th>
-            <th>커버율</th>
+            <th>월평균판매</th>
+            <th>리드타임</th>
+            <th>리드타임 예상판매</th>
+            <th>안전재고</th>
+            <th>예상부족</th>
+            <th>예상소진일</th>
             <th>상태</th>
             <th>추천</th>
           </tr>
@@ -73,14 +75,14 @@
 
   <script>
     let inventory = [];
-
     const fmt = (n) => Number(n || 0).toLocaleString();
 
     function rowClass(status) {
+      if (!status) return "";
       if (status.includes("즉시")) return "danger";
       if (status.includes("주의")) return "warning";
       if (status.includes("안전")) return "safe";
-      return "none";
+      return "";
     }
 
     function render() {
@@ -100,33 +102,42 @@
           <td>${fmt(item.currentStock)}</td>
           <td>${fmt(item.incomingStock)}</td>
           <td>${fmt(item.availableStock)}</td>
-          <td>${fmt(item.pastSales)}</td>
-          <td>${fmt(item.balance)}</td>
-          <td>${item.coverRate === null ? "-" : item.coverRate + "배"}</td>
+          <td>${fmt(item.avgMonthlySales)}</td>
+          <td>${fmt(item.leadTime)}일</td>
+          <td>${fmt(item.expectedSalesDuringLeadTime)}</td>
+          <td>${fmt(item.safetyStock)}</td>
+          <td>${fmt(item.shortage)}</td>
+          <td>${item.daysLeft === 9999 ? "-" : fmt(item.daysLeft) + "일"}</td>
           <td class="status">${item.status}</td>
-          <td>${item.recommendation}</td>
+          <td>${item.action}</td>
         </tr>
       `).join("");
     }
 
     async function load() {
-      const [summaryRes, inventoryRes] = await Promise.all([
-        fetch("/api/summary"),
-        fetch("/api/inventory")
-      ]);
-      const summary = await summaryRes.json();
-      inventory = await inventoryRes.json();
+      const res = await fetch("/api/inventory");
+      inventory = await res.json();
 
-      document.getElementById("danger").textContent = summary.danger;
-      document.getElementById("warning").textContent = summary.warning;
-      document.getElementById("safe").textContent = summary.safe;
-      document.getElementById("shortage").textContent = fmt(summary.totalShortage);
+      const danger = inventory.filter(x => x.status.includes("즉시")).length;
+      const warning = inventory.filter(x => x.status.includes("주의")).length;
+      const safe = inventory.filter(x => x.status.includes("안전")).length;
+      const totalShortage = inventory.reduce((sum, x) => sum + Number(x.shortage || 0), 0);
+
+      document.getElementById("danger").textContent = fmt(danger);
+      document.getElementById("warning").textContent = fmt(warning);
+      document.getElementById("safe").textContent = fmt(safe);
+      document.getElementById("shortage").textContent = fmt(totalShortage);
+
       render();
     }
 
     document.getElementById("search").addEventListener("input", render);
     document.getElementById("statusFilter").addEventListener("change", render);
-    load();
+
+    load().catch(err => {
+      console.error(err);
+      alert("데이터 불러오기 실패. Render 로그를 확인해줘.");
+    });
   </script>
 </body>
 </html>
