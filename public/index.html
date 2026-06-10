@@ -23,6 +23,7 @@
     tr.warning { background: #fff6d9; }
     tr.safe { background: #eefcf1; }
     .status { font-weight: 700; }
+    .small { font-size: 12px; color: #555; }
     @media (max-width: 1200px) {
       .cards { grid-template-columns: repeat(2, 1fr); }
       .table-box { overflow-x: auto; }
@@ -32,7 +33,7 @@
 <body>
   <header>
     <h1>화분·상토 발주 대시보드</h1>
-    <div>기준: 현재고 + 입고예정 - 리드타임 예상판매 - 안전재고</div>
+    <div>기준: 작년 같은 시기 판매량 × 성장률 + 안전재고</div>
   </header>
 
   <div class="wrap">
@@ -67,9 +68,11 @@
             <th>현재고</th>
             <th>입고예정</th>
             <th>가용수량</th>
-            <th>월평균판매</th>
+            <th>예상 월평균</th>
             <th>리드타임</th>
             <th>리드타임 예상판매</th>
+            <th>예상근거</th>
+            <th>성장률</th>
             <th>안전재고</th>
             <th>예상부족</th>
             <th>예상소진일</th>
@@ -122,9 +125,11 @@
           <td>${fmt(item.currentStock)}</td>
           <td>${fmt(item.incomingStock)}</td>
           <td>${fmt(item.availableStock)}</td>
-          <td>${fmt(item.avgMonthlySales)}</td>
+          <td>${fmt(item.monthlyForecast)}</td>
           <td>${fmt(item.leadTime)}일</td>
-          <td>${fmt(item.expectedSalesDuringLeadTime)}</td>
+          <td>${fmt(item.seasonalForecast)}</td>
+          <td class="small">${item.forecastDetail || "-"}</td>
+          <td>${item.growthRate}%</td>
           <td>${fmt(item.safetyStock)}</td>
           <td>${fmt(item.shortage)}</td>
           <td>${item.daysLeft === 9999 ? "-" : fmt(item.daysLeft) + "일"}</td>
