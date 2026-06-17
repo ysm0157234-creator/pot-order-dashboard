@@ -8,36 +8,54 @@
     :root {
       --ink: #191f28;
       --muted: #6b7684;
+      --soft: #8b95a1;
       --line: #edf0f3;
       --surface: #ffffff;
-      --bg: #f8f9fb;
+      --bg: #f7f8fa;
       --brand: #3182f6;
+      --brand-dark: #1b64da;
+      --brand-soft: #e8f3ff;
       --danger: #f04452;
       --danger-bg: #fff4f4;
       --warning: #f59f00;
       --warning-bg: #fff8e7;
       --safe: #00a661;
       --safe-bg: #eefaf4;
-      --shadow: 0 8px 24px rgba(25, 31, 40, .06);
+      --shadow: 0 18px 42px rgba(25, 31, 40, .07);
+      --shadow-soft: 0 8px 24px rgba(25, 31, 40, .045);
     }
 
     * { box-sizing: border-box; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, "Noto Sans KR", sans-serif;
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Pretendard",
+        "Apple SD Gothic Neo",
+        "Noto Sans KR",
+        Arial,
+        sans-serif;
       margin: 0;
-      background: var(--bg);
+      background:
+        radial-gradient(circle at 20% 0%, rgba(49,130,246,.08), transparent 320px),
+        var(--bg);
       color: var(--ink);
+      letter-spacing: 0;
     }
 
     header, .wrap {
-      max-width: 1440px;
+      max-width: 1480px;
       margin: 0 auto;
-      padding-left: 28px;
-      padding-right: 28px;
+      padding-left: 30px;
+      padding-right: 30px;
     }
 
-    header { padding-top: 34px; padding-bottom: 20px; }
+    header {
+      padding-top: 36px;
+      padding-bottom: 20px;
+    }
 
     .topbar {
       display: flex;
@@ -49,15 +67,16 @@
     .eyebrow {
       color: var(--brand);
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 900;
       margin-bottom: 10px;
+      letter-spacing: .04em;
     }
 
     h1 {
       margin: 0 0 10px;
-      font-size: 32px;
-      line-height: 1.25;
-      font-weight: 800;
+      font-size: 34px;
+      line-height: 1.22;
+      font-weight: 900;
     }
 
     .subline {
@@ -70,41 +89,48 @@
     }
 
     .update-pill {
-      background: var(--surface);
+      background: rgba(255,255,255,.88);
+      border: 1px solid rgba(237,240,243,.8);
       border-radius: 999px;
       color: var(--muted);
       padding: 12px 16px;
       white-space: nowrap;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-soft);
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
     }
 
-    .wrap { padding-top: 12px; padding-bottom: 44px; }
+    .wrap {
+      padding-top: 12px;
+      padding-bottom: 48px;
+    }
 
     .cards {
       display: grid;
       grid-template-columns: repeat(7, minmax(132px, 1fr));
-      gap: 12px;
-      margin-bottom: 26px;
+      gap: 14px;
+      margin-bottom: 28px;
     }
 
     .card {
-      background: var(--surface);
-      border-radius: 18px;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(237,240,243,.9);
+      border-radius: 24px;
       padding: 18px;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-soft);
       color: var(--muted);
-      min-height: 104px;
-      font-weight: 700;
+      min-height: 108px;
+      font-weight: 800;
+      backdrop-filter: blur(10px);
     }
 
     .card b {
       display: block;
-      font-size: 30px;
+      font-size: 31px;
       margin-top: 14px;
       color: var(--ink);
       line-height: 1;
+      font-weight: 900;
     }
 
     .card:nth-child(1) { background: linear-gradient(180deg, #fff 0, var(--danger-bg) 100%); }
@@ -112,7 +138,7 @@
     .card:nth-child(3) { background: linear-gradient(180deg, #fff 0, var(--safe-bg) 100%); }
 
     .section-title {
-      margin: 30px 0 14px;
+      margin: 32px 0 14px;
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
@@ -121,8 +147,9 @@
 
     .section-title h2 {
       margin: 0;
-      font-size: 22px;
-      font-weight: 800;
+      font-size: 23px;
+      line-height: 1.35;
+      font-weight: 900;
     }
 
     .section-title span {
@@ -134,14 +161,14 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(292px, 1fr));
       gap: 14px;
-      margin-bottom: 24px;
+      margin-bottom: 26px;
     }
 
     .urgent-item {
       background: var(--surface);
-      border-radius: 20px;
+      border-radius: 24px;
       padding: 20px;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-soft);
       position: relative;
       overflow: hidden;
     }
@@ -160,6 +187,7 @@
       display: block;
       margin-bottom: 10px;
       font-size: 17px;
+      font-weight: 900;
     }
 
     .urgent-item .meta {
@@ -169,18 +197,19 @@
     }
 
     .analysis-box {
-      background: var(--surface);
-      border-radius: 24px;
-      padding: 18px;
+      background: rgba(255,255,255,.94);
+      border: 1px solid rgba(237,240,243,.9);
+      border-radius: 30px;
+      padding: 20px;
       box-shadow: var(--shadow);
-      margin-bottom: 26px;
+      margin-bottom: 28px;
     }
 
     .analysis-top {
       display: grid;
       grid-template-columns: minmax(260px, 1fr) auto;
       gap: 12px;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
       align-items: center;
     }
 
@@ -188,81 +217,124 @@
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .tab {
       border: 0;
       border-radius: 999px;
-      padding: 11px 15px;
+      padding: 11px 16px;
       background: #f2f4f6;
       color: var(--muted);
-      font-weight: 800;
+      font-weight: 900;
       cursor: pointer;
+      transition: .18s ease;
+    }
+
+    .tab:hover {
+      background: #e9eef5;
     }
 
     .tab.active {
       background: var(--brand);
       color: #fff;
+      box-shadow: 0 8px 18px rgba(49,130,246,.24);
     }
 
     .metrics {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 14px;
+      gap: 12px;
+      margin-bottom: 16px;
     }
 
     .metric {
       background: #f8f9fb;
-      border-radius: 18px;
-      padding: 15px 16px;
+      border-radius: 22px;
+      padding: 16px 17px;
       color: var(--muted);
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
     }
 
     .metric b {
       display: block;
       color: var(--ink);
-      font-size: 24px;
-      margin-top: 8px;
+      font-size: 25px;
+      margin-top: 9px;
+      font-weight: 900;
     }
 
     .chart-card {
-      background: #fbfcfd;
-      border-radius: 20px;
-      padding: 16px;
-      min-height: 360px;
+      background: linear-gradient(180deg, #fbfcfd 0%, #fff 100%);
+      border-radius: 26px;
+      padding: 20px;
+      min-height: 410px;
+    }
+
+    .chart-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
     }
 
     .chart-card h3 {
-      margin: 0 0 12px;
-      font-size: 16px;
+      margin: 0;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .chart-hint {
+      color: var(--soft);
+      font-size: 13px;
+      font-weight: 700;
     }
 
     .chart {
       width: 100%;
-      height: 280px;
+      height: 320px;
       display: block;
+      overflow: visible;
+    }
+
+    .axis-labels {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+      gap: 6px;
+      margin-top: 10px;
+      color: var(--soft);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .axis-labels span {
+      text-align: center;
+      white-space: nowrap;
     }
 
     .bar-list {
       display: grid;
       gap: 12px;
       margin-top: 10px;
+      max-height: 520px;
+      overflow: auto;
+      padding-right: 4px;
     }
 
     .bar-row {
       display: grid;
-      grid-template-columns: 140px 1fr 90px;
+      grid-template-columns: 150px 1fr 90px;
       align-items: center;
       gap: 12px;
       font-size: 13px;
       color: var(--muted);
+      font-weight: 800;
     }
 
     .bar-track {
-      height: 13px;
+      height: 14px;
       background: #edf0f3;
       border-radius: 999px;
       overflow: hidden;
@@ -270,7 +342,7 @@
 
     .bar-fill {
       height: 100%;
-      background: var(--brand);
+      background: linear-gradient(90deg, var(--brand), #66a7ff);
       border-radius: 999px;
     }
 
@@ -280,25 +352,30 @@
       gap: 10px;
       margin: 20px 0 16px;
       align-items: center;
-      background: var(--surface);
-      border-radius: 20px;
+      background: rgba(255,255,255,.94);
+      border-radius: 24px;
       padding: 14px;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-soft);
     }
 
     input, select, button {
-      padding: 13px 14px;
+      padding: 14px 15px;
       border: 0;
-      border-radius: 14px;
+      border-radius: 16px;
       font-size: 14px;
       background: #f2f4f6;
       color: var(--ink);
+      font-family: inherit;
+    }
+
+    select {
+      cursor: pointer;
     }
 
     button {
       cursor: pointer;
       min-width: 104px;
-      font-weight: 800;
+      font-weight: 900;
     }
 
     button.active {
@@ -312,9 +389,9 @@
 
     .table-box {
       overflow-x: auto;
-      border-radius: 22px;
+      border-radius: 26px;
       background: #fff;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-soft);
     }
 
     table {
@@ -338,11 +415,10 @@
       top: 0;
       z-index: 1;
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 900;
     }
 
     th:first-child, td:first-child { text-align: left; }
-
     tbody tr:hover { background: #f8f9fb; }
 
     tr.danger { background: var(--danger-bg); }
@@ -354,7 +430,7 @@
       padding: 7px 10px;
       border-radius: 999px;
       background: rgba(255,255,255,.8);
-      font-weight: 700;
+      font-weight: 800;
     }
 
     .small {
@@ -365,7 +441,7 @@
 
     .danger-text {
       color: var(--danger);
-      font-weight: 700;
+      font-weight: 900;
     }
 
     .hidden { display: none; }
@@ -373,14 +449,16 @@
     .empty {
       background: var(--surface);
       border-radius: 18px;
-      padding: 22px;
+      padding: 28px;
       color: var(--muted);
       text-align: center;
+      font-weight: 700;
     }
 
     @media (max-width: 1200px) {
       .cards { grid-template-columns: repeat(2, 1fr); }
       .toolbar, .analysis-top, .metrics { grid-template-columns: 1fr; }
+      .tabs { justify-content: flex-start; }
     }
 
     @media (max-width: 680px) {
@@ -391,6 +469,7 @@
       .cards, .toolbar { grid-template-columns: 1fr; }
       .section-title { display: block; }
       .bar-row { grid-template-columns: 88px 1fr 70px; }
+      .chart { height: 280px; }
     }
   </style>
 </head>
@@ -402,7 +481,7 @@
         <h1>화분·상토 발주 대시보드</h1>
         <div class="subline">
           <span>기존 발주 계산은 유지</span>
-          <span>판매량2 시트로 월별·품목별·년별·기대성장률 분석</span>
+          <span>판매량 시트로 월별·품목별·년별·기대성장률 분석</span>
         </div>
       </div>
       <div id="updatedAt" class="update-pill">마지막 업데이트: -</div>
@@ -428,7 +507,7 @@
 
     <div class="section-title">
       <h2>판매 분석</h2>
-      <span>버튼을 눌러 원하는 그래프만 확인</span>
+      <span>버튼을 눌러 월별, 품목별, 년별, 기대 성장률을 따로 확인</span>
     </div>
 
     <div class="analysis-box">
@@ -449,8 +528,12 @@
       </div>
 
       <div class="chart-card">
-        <h3 id="analysisTitle">월별 판매량</h3>
-        <svg id="lineChart" class="chart" viewBox="0 0 900 280" preserveAspectRatio="none"></svg>
+        <div class="chart-title-row">
+          <h3 id="analysisTitle">월별 판매량</h3>
+          <div id="chartHint" class="chart-hint">모든 월 라벨 표시</div>
+        </div>
+        <svg id="lineChart" class="chart" viewBox="0 0 980 320" preserveAspectRatio="none"></svg>
+        <div id="axisLabels" class="axis-labels"></div>
         <div id="barChart" class="bar-list hidden"></div>
       </div>
     </div>
@@ -543,52 +626,71 @@
     function showLine(data, title) {
       const svg = document.getElementById("lineChart");
       const bars = document.getElementById("barChart");
+      const axisLabels = document.getElementById("axisLabels");
       document.getElementById("analysisTitle").textContent = title;
+      document.getElementById("chartHint").textContent = "모든 월 라벨 표시";
       svg.classList.remove("hidden");
+      axisLabels.classList.remove("hidden");
       bars.classList.add("hidden");
 
       const pointsData = data || [];
       const max = Math.max(...pointsData.map(x => x.qty), 1);
-      const width = 900;
-      const height = 280;
-      const pad = 28;
+      const width = 980;
+      const height = 320;
+      const padX = 28;
+      const padTop = 24;
+      const padBottom = 46;
 
       if (!pointsData.length) {
-        svg.innerHTML = `<text x="450" y="145" text-anchor="middle" fill="#8b95a1" font-size="15">판매량 데이터가 없습니다</text>`;
+        svg.innerHTML = `<text x="490" y="165" text-anchor="middle" fill="#8b95a1" font-size="15">판매량 데이터가 없습니다</text>`;
+        axisLabels.innerHTML = "";
         return;
       }
 
-      const step = pointsData.length > 1 ? (width - pad * 2) / (pointsData.length - 1) : 0;
+      const step = pointsData.length > 1 ? (width - padX * 2) / (pointsData.length - 1) : 0;
 
       const points = pointsData.map((item, index) => {
-        const x = pad + step * index;
-        const y = height - pad - (item.qty / max) * (height - pad * 2);
+        const x = padX + step * index;
+        const y = height - padBottom - (item.qty / max) * (height - padTop - padBottom);
         return { ...item, x, y };
       });
 
       const line = points.map(p => `${p.x},${p.y}`).join(" ");
-      const area = `${pad},${height - pad} ${line} ${width - pad},${height - pad}`;
+      const area = `${padX},${height - padBottom} ${line} ${width - padX},${height - padBottom}`;
 
-      const labelPoints = points.filter((_, i) =>
-        i === 0 || i === points.length - 1 || i === Math.floor(points.length / 2)
-      );
+      const grid = [0, .25, .5, .75, 1].map(rate => {
+        const y = height - padBottom - rate * (height - padTop - padBottom);
+        return `<line x1="${padX}" x2="${width - padX}" y1="${y}" y2="${y}" stroke="#edf0f3" stroke-width="1"></line>`;
+      }).join("");
 
       svg.innerHTML = `
-        <polyline points="${area}" fill="rgba(49,130,246,.10)"></polyline>
-        <polyline points="${line}" fill="none" stroke="#3182f6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>
-        ${points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="4.5" fill="#3182f6"></circle>`).join("")}
-        ${labelPoints.map(p => `
-          <text x="${p.x}" y="${height - 6}" text-anchor="middle" fill="#8b95a1" font-size="12">${esc(p.label)}</text>
-          <text x="${p.x}" y="${Math.max(16, p.y - 10)}" text-anchor="middle" fill="#6b7684" font-size="12">${fmt(p.qty)}</text>
-        `).join("")}
+        <defs>
+          <linearGradient id="lineFill" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#3182f6" stop-opacity=".22"></stop>
+            <stop offset="100%" stop-color="#3182f6" stop-opacity=".02"></stop>
+          </linearGradient>
+        </defs>
+        ${grid}
+        <polyline points="${area}" fill="url(#lineFill)"></polyline>
+        <polyline points="${line}" fill="none" stroke="#3182f6" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+        ${points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="5" fill="#3182f6" stroke="#fff" stroke-width="3"></circle>`).join("")}
+        ${points.map((p, index) => {
+          if (index % 2 !== 0 && points.length > 14) return "";
+          return `<text x="${p.x}" y="${Math.max(18, p.y - 13)}" text-anchor="middle" fill="#6b7684" font-size="12" font-weight="700">${fmt(p.qty)}</text>`;
+        }).join("")}
       `;
+
+      axisLabels.innerHTML = pointsData.map(item => `<span>${esc(item.label)}</span>`).join("");
     }
 
     function showBars(data, title, valueKey = "qty", valueSuffix = "") {
       const svg = document.getElementById("lineChart");
       const bars = document.getElementById("barChart");
+      const axisLabels = document.getElementById("axisLabels");
       document.getElementById("analysisTitle").textContent = title;
+      document.getElementById("chartHint").textContent = "상위 항목 기준";
       svg.classList.add("hidden");
+      axisLabels.classList.add("hidden");
       bars.classList.remove("hidden");
 
       const rows = data || [];
@@ -604,7 +706,7 @@
         const label = item.label || item.productName || item.year;
         return `
           <div class="bar-row">
-            <span>${esc(label)}</span>
+            <span title="${esc(label)}">${esc(label)}</span>
             <div class="bar-track">
               <div class="bar-fill" style="width:${Math.max(3, value / max * 100)}%"></div>
             </div>
@@ -626,8 +728,7 @@
         showBars(
           salesAnalysis.products
             .map(x => ({ productName: x.productName, qty: x.totalSales }))
-            .sort((a, b) => b.qty - a.qty)
-            .slice(0, 20),
+            .sort((a, b) => b.qty - a.qty),
           "품목별 누적 판매량"
         );
       }
@@ -643,9 +744,8 @@
         showBars(
           salesAnalysis.products
             .map(x => ({ productName: x.productName, growth: x.expectedGrowthRate }))
-            .sort((a, b) => b.growth - a.growth)
-            .slice(0, 20),
-          "기대 성장률 높은 품목",
+            .sort((a, b) => b.growth - a.growth),
+          "기대 성장률",
           "growth",
           "%"
         );
@@ -656,7 +756,7 @@
       const select = document.getElementById("analysisProduct");
 
       if (!salesAnalysis.products.length) {
-        select.innerHTML = `<option>판매량2 데이터 없음</option>`;
+        select.innerHTML = `<option>판매 데이터 없음</option>`;
         renderAnalysis();
         return;
       }
