@@ -9,7 +9,6 @@ app.use(express.static("public"));
 
 const SHEET_ID = "1mDjPwVt5o44DY-63I3uScK58WUADvpe_GSCDFtld4rw";
 const SALES_SHEET = "판매량";
-const SALES_ANALYSIS_SHEET = "판매량2";
 const STOCK_SHEET = "재고";
 
 function num(v) {
@@ -63,33 +62,27 @@ function daysBetween(fromDate, toDate) {
 }
 
 async function readSheet(sheetName) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+  const url =
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+
   const res = await axios.get(url);
-  return parse(res.data, { columns: true, skip_empty_lines: true, bom: true });
-}
-
-function findValue(row, names) {
-  const keys = Object.keys(row);
-  for (const name of names) {
-    const key = keys.find(k => clean(k) === clean(name));
-    if (key) return row[key];
-  }
-  return "";
-}
-
-function findName(row) {
-  return String(findValue(row, [
-    "품목명", "품목", "품목별", "상품명", "제품명", "화분크기", "화분 크기"
-  ]) || "").trim();
+  return parse(res.data, {
+    columns: true,
+    skip_empty_lines: true,
+    bom: true
+  });
 }
 
 function parseMonthHeader(header) {
   const raw = String(header || "").trim();
 
-  let m = raw.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월$/);
+  let m = raw.match(/^(\d{4})\/(\d{1,2})$/);
   if (m) return { year: Number(m[1]), month: Number(m[2]) };
 
-  m = raw.match(/^(\d{4})[./-](\d{1,2})$/);
+  m = raw.match(/^(\d{4})[.-](\d{1,2})$/);
+  if (m) return { year: Number(m[1]), month: Number(m[2]) };
+
+  m = raw.match(/^(\d{4})년\s*(\d{1,2})월$/);
   if (m) return { year: Number(m[1]), month: Number(m[2]) };
 
   m = raw.match(/^(\d{2})[./-](\d{1,2})$/);
@@ -98,40 +91,34 @@ function parseMonthHeader(header) {
   return null;
 }
 
+function productNameFromSalesRow(row) {
+  return String(row["품목별"] || row["품목명"] || row["품목"] || "").trim();
+}
+
 function buildSalesAnalysis(rows) {
-  const productMap = {};
+  const products = rows.map(row => {
+    const productName = productNameFromSalesRow(row);
+    if (!productName || productName.includes("총합계")) return null;
 
-  rows.forEach(row => {
-    const productName = findName(row);
-    if (!productName || productName.includes("총합계")) return;
+    const monthlySales = Object.keys(row)
+      .map(header => {
+        const parsed = parseMonthHeader(header);
+        if (!parsed) return null;
 
-    if (!productMap[productName]) {
-      productMap[productName] = {};
-    }
-
-    Object.keys(row).forEach(header => {
-      const parsed = parseMonthHeader(header);
-      if (!parsed) return;
-
-      const key = monthKey(parsed.year, parsed.month);
-      productMap[productName][key] = (productMap[productName][key] || 0) + num(row[header]);
-    });
-  });
-
-  const products = Object.keys(productMap).map(productName => {
-    const monthlySales = Object.keys(productMap[productName])
-      .map(key => {
-        const [year, month] = key.split("/").map(Number);
         return {
-          key,
-          year,
-          month,
-          label: `${year}.${String(month).padStart(2, "0")}`,
-          qty: productMap[productName][key]
+          key: monthKey(parsed.year, parsed.month),
+          year: parsed.year,
+          month: parsed.month,
+          label: `${parsed.year}.${String(parsed.month).padStart(2, "0")}`,
+          qty: num(row[header])
         };
       })
+      .filter(Boolean)
       .filter(x => x.year > 2023 || (x.year === 2023 && x.month >= 3))
-      .sort((a, b) => a.year === b.year ? a.month - b.month : a.year - b.year);
+      .sort((a, b) => {
+        if (a.year !== b.year) return a.year - b.year;
+        return a.month - b.month;
+      });
 
     const yearlyMap = {};
     monthlySales.forEach(item => {
@@ -150,22 +137,32 @@ function buildSalesAnalysis(rows) {
     let lastYearTotal = 0;
 
     for (let m = 1; m <= thisMonth; m++) {
-      thisYearTotal += productMap[productName][monthKey(thisYear, m)] || 0;
-      lastYearTotal += productMap[productName][monthKey(thisYear - 1, m)] || 0;
+      const thisMonthRow = monthlySales.find(x => x.year === thisYear && x.month === m);
+      const lastMonthRow = monthlySales.find(x => x.year === thisYear - 1 && x.month === m);
+
+      thisYearTotal += thisMonthRow ? thisMonthRow.qty : 0;
+      lastYearTotal += lastMonthRow ? lastMonthRow.qty : 0;
     }
 
     let growthRate = 100;
-    if (lastYearTotal > 0) growthRate = Math.round(clamp(thisYearTotal / lastYearTotal, 0.3, 4) * 100);
-    else if (thisYearTotal > 0) growthRate = 130;
+    if (lastYearTotal > 0) {
+      growthRate = Math.round(clamp(thisYearTotal / lastYearTotal, 0.3, 4) * 100);
+    } else if (thisYearTotal > 0) {
+      growthRate = 130;
+    }
 
     const recent3 = monthlySales.slice(-3).reduce((sum, x) => sum + x.qty, 0);
     const prev3 = monthlySales.slice(-6, -3).reduce((sum, x) => sum + x.qty, 0);
 
     let recentMomentumRate = 100;
-    if (prev3 > 0) recentMomentumRate = Math.round(clamp(recent3 / prev3, 0.3, 4) * 100);
-    else if (recent3 > 0) recentMomentumRate = 120;
+    if (prev3 > 0) {
+      recentMomentumRate = Math.round(clamp(recent3 / prev3, 0.3, 4) * 100);
+    } else if (recent3 > 0) {
+      recentMomentumRate = 120;
+    }
 
     const expectedGrowthRate = Math.round(growthRate * 0.65 + recentMomentumRate * 0.35);
+    const totalSales = monthlySales.reduce((sum, x) => sum + x.qty, 0);
 
     return {
       productName,
@@ -174,9 +171,9 @@ function buildSalesAnalysis(rows) {
       growthRate,
       recentMomentumRate,
       expectedGrowthRate,
-      totalSales: monthlySales.reduce((sum, x) => sum + x.qty, 0)
+      totalSales
     };
-  });
+  }).filter(Boolean);
 
   const monthMap = {};
   products.forEach(product => {
@@ -196,7 +193,10 @@ function buildSalesAnalysis(rows) {
         qty: monthMap[key]
       };
     })
-    .sort((a, b) => a.year === b.year ? a.month - b.month : a.year - b.year);
+    .sort((a, b) => {
+      if (a.year !== b.year) return a.year - b.year;
+      return a.month - b.month;
+    });
 
   const yearMap = {};
   totalMonthlySales.forEach(item => {
@@ -234,6 +234,22 @@ function calcProductGrowthRate(row) {
   return clamp(currentTotal / prevTotal, 0.5, 3);
 }
 
+function summarizeTrend(monthlyValues) {
+  const positiveValues = monthlyValues.filter(v => v > 0);
+  if (!positiveValues.length) return "판매 흐름 없음";
+
+  if (monthlyValues.length >= 2) {
+    const prev = monthlyValues[monthlyValues.length - 2];
+    const last = monthlyValues[monthlyValues.length - 1];
+
+    if (last > 0 && prev > 0 && last >= prev * 1.5) return "최근월 판매 증가";
+    if (last > 0 && prev > 0 && last <= prev * 0.5) return "최근월 판매 감소";
+  }
+
+  if (positiveValues.length === 1) return "특정월 판매 집중";
+  return "계절 판매 기준";
+}
+
 function forecastBySeason(row, leadTimeDays, productGrowthRate) {
   const today = new Date();
   const year = today.getFullYear();
@@ -242,9 +258,11 @@ function forecastBySeason(row, leadTimeDays, productGrowthRate) {
 
   let forecast = 0;
   const detail = [];
+  const monthlyValues = [];
 
   for (let i = 0; i < leadMonths; i++) {
     const target = addMonths(year, month, i);
+
     const lastYearQty = num(row[monthKey(target.year - 1, target.month)]);
     const twoYearsAgoQty = num(row[monthKey(target.year - 2, target.month)]);
     const threeYearsAgoQty = num(row[monthKey(target.year - 3, target.month)]);
@@ -252,24 +270,29 @@ function forecastBySeason(row, leadTimeDays, productGrowthRate) {
     let baseQty = lastYearQty;
     if (baseQty <= 0) {
       const oldValues = [twoYearsAgoQty, threeYearsAgoQty].filter(v => v > 0);
-      baseQty = oldValues.length ? oldValues.reduce((a, b) => a + b, 0) / oldValues.length : 0;
+      baseQty = oldValues.length
+        ? oldValues.reduce((a, b) => a + b, 0) / oldValues.length
+        : 0;
     }
 
     const predicted = Math.round(baseQty * productGrowthRate);
     forecast += predicted;
+    monthlyValues.push(predicted);
     detail.push(`${target.month}월:${predicted.toLocaleString()}`);
   }
 
   return {
     forecast: Math.round(forecast),
     monthlyForecast: Math.round(forecast / leadMonths),
-    detail: detail.join(" / ")
+    detail: detail.join(" / "),
+    trendSummary: summarizeTrend(monthlyValues)
   };
 }
 
 app.get("/api/sales-analysis", async (req, res) => {
   try {
-    const rows = await readSheet(SALES_ANALYSIS_SHEET);
+    const rows = await readSheet(SALES_SHEET);
+
     res.json({
       updatedAt: formatDateTime(new Date()),
       ...buildSalesAnalysis(rows)
@@ -277,7 +300,7 @@ app.get("/api/sales-analysis", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({
-      error: "판매량2 시트 분석 실패",
+      error: "판매량 시트 분석 실패",
       message: err.message
     });
   }
@@ -299,7 +322,9 @@ app.get("/api/inventory", async (req, res) => {
     const today = new Date();
 
     const result = stockRows.map(row => {
-      const productName = (row["품목명"] || row["품목별"] || row["품목"] || "").trim();
+      const productName =
+        (row["품목명"] || row["품목별"] || row["품목"] || "").trim();
+
       if (!productName || productName.includes("총합계")) return null;
 
       const currentStock = num(row["현재고"]);
@@ -314,23 +339,36 @@ app.get("/api/inventory", async (req, res) => {
       let seasonalForecast = 0;
       let monthlyForecast = 0;
       let forecastDetail = "-";
+      let trendSummary = "판매 흐름 없음";
 
       if (salesRow) {
         productGrowthRate = calcProductGrowthRate(salesRow);
-        const forecastResult = forecastBySeason(salesRow, leadTime, productGrowthRate);
+
+        const forecastResult = forecastBySeason(
+          salesRow,
+          leadTime,
+          productGrowthRate
+        );
+
         seasonalForecast = forecastResult.forecast;
         monthlyForecast = forecastResult.monthlyForecast;
         forecastDetail = forecastResult.detail;
+        trendSummary = forecastResult.trendSummary;
       } else {
         seasonalForecast = num(row["작년판매"]);
         monthlyForecast = Math.round(seasonalForecast / Math.ceil(leadTime / 30));
         forecastDetail = "판매량 시트 매칭 없음";
+        trendSummary = "판매량 매칭 필요";
       }
 
       const safetyStock = monthlyForecast;
       const shortage = Math.ceil(seasonalForecast + safetyStock - availableStock);
       const avgDailyForecast = monthlyForecast / 30;
-      const daysLeft = avgDailyForecast > 0 ? Math.round(availableStock / avgDailyForecast) : 9999;
+
+      const daysLeft =
+        avgDailyForecast > 0
+          ? Math.round(availableStock / avgDailyForecast)
+          : 9999;
 
       const stockoutDate = daysLeft === 9999 ? null : new Date(today);
       if (stockoutDate) stockoutDate.setDate(today.getDate() + daysLeft);
@@ -353,13 +391,18 @@ app.get("/api/inventory", async (req, res) => {
       if (shortage > 0) {
         status = "🔴 즉시발주";
         action = `최소 ${Math.max(0, shortage).toLocaleString()}개 부족 예상`;
-        if (orderDelayDays > 0) action += ` / 발주 ${orderDelayDays}일 지연`;
+
+        if (orderDelayDays > 0) {
+          action += ` / 발주 ${orderDelayDays}일 지연`;
+        }
       } else if (daysLeft <= leadTime + 30) {
         status = "🟡 주의";
         action = "30일 내 발주 검토";
       }
 
-      if (manualOrder) action += ` / 기존 제안: ${manualOrder}`;
+      if (manualOrder) {
+        action += ` / 기존 제안: ${manualOrder}`;
+      }
 
       return {
         productName,
@@ -367,17 +410,23 @@ app.get("/api/inventory", async (req, res) => {
         incomingStock,
         availableStock,
         leadTime,
+
         growthRate: Math.round(productGrowthRate * 100),
+
         monthlyForecast,
         seasonalForecast,
         forecastDetail,
+        trendSummary,
+
         safetyStock,
         shortage: Math.max(0, shortage),
+
         daysLeft,
         stockoutDate: formatDate(stockoutDate),
         recommendedOrderDate: formatDate(recommendedOrderDate),
         orderDelayDays,
         stockoutGroup,
+
         status,
         action,
         updatedAt: formatDateTime(updatedAt),
@@ -389,8 +438,16 @@ app.get("/api/inventory", async (req, res) => {
     }).filter(Boolean);
 
     result.sort((a, b) => {
-      const order = { "🔴 즉시발주": 1, "🟡 주의": 2, "🟢 안전": 3 };
-      if (order[a.status] !== order[b.status]) return order[a.status] - order[b.status];
+      const order = {
+        "🔴 즉시발주": 1,
+        "🟡 주의": 2,
+        "🟢 안전": 3
+      };
+
+      if (order[a.status] !== order[b.status]) {
+        return order[a.status] - order[b.status];
+      }
+
       return a.daysLeft - b.daysLeft;
     });
 
@@ -405,5 +462,5 @@ app.get("/api/inventory", async (req, res) => {
 });
 
 app.listen(process.env.PORT || 3000, () => {
-  console.log("발주 대시보드 실행 중");
+  console.log("판매량 시트 기반 발주 대시보드 실행 중");
 });
