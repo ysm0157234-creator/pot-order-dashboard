@@ -9,7 +9,8 @@
       --ink: #191f28;
       --muted: #6b7684;
       --soft: #8b95a1;
-      --line: #edf0f3;
+      --line: #d8dee8;
+      --line-soft: #edf0f3;
       --surface: #ffffff;
       --bg: #f8f9fb;
 
@@ -18,7 +19,6 @@
       --brand-soft: #e8f3ff;
 
       --grid: rgba(139, 149, 161, .38);
-      --shadow: 0 4px 14px rgba(25, 31, 40, .05);
     }
 
     * { box-sizing: border-box; }
@@ -44,6 +44,8 @@
       align-items: center;
       justify-content: space-between;
       gap: 20px;
+      border-bottom: 1px solid var(--line-soft);
+      padding-bottom: 20px;
     }
 
     .eyebrow {
@@ -77,7 +79,6 @@
       color: var(--brand);
       padding: 12px 16px;
       white-space: nowrap;
-      box-shadow: var(--shadow);
       font-size: 13px;
       font-weight: 900;
     }
@@ -96,7 +97,6 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       padding: 18px;
-      box-shadow: var(--shadow);
       color: var(--muted);
       min-height: 108px;
       font-weight: 800;
@@ -144,7 +144,6 @@
       border-left: 4px solid var(--brand);
       border-radius: 8px;
       padding: 20px;
-      box-shadow: var(--shadow);
     }
 
     .urgent-item strong {
@@ -165,7 +164,6 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       padding: 20px;
-      box-shadow: var(--shadow);
       margin-bottom: 28px;
     }
 
@@ -175,6 +173,8 @@
       gap: 12px;
       margin-bottom: 16px;
       align-items: center;
+      border-bottom: 1px solid var(--line-soft);
+      padding-bottom: 16px;
     }
 
     .tabs {
@@ -240,6 +240,8 @@
       justify-content: space-between;
       gap: 12px;
       margin-bottom: 12px;
+      border-bottom: 1px solid var(--line-soft);
+      padding-bottom: 12px;
     }
 
     .chart-card h3 {
@@ -261,7 +263,7 @@
       height: 390px;
       display: block;
       background: #fff;
-      border: 1px solid #d8dee8;
+      border: 1px solid var(--line);
       border-radius: 0;
     }
 
@@ -307,6 +309,8 @@
       font-size: 13px;
       color: var(--muted);
       font-weight: 800;
+      border-bottom: 1px solid var(--line-soft);
+      padding-bottom: 12px;
     }
 
     .bar-track {
@@ -332,7 +336,6 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       padding: 14px;
-      box-shadow: var(--shadow);
     }
 
     input, select, button {
@@ -366,7 +369,6 @@
       border-radius: 8px;
       background: #fff;
       border: 1px solid var(--line);
-      box-shadow: var(--shadow);
     }
 
     table {
@@ -377,7 +379,7 @@
 
     th, td {
       padding: 15px 14px;
-      border-bottom: 1px solid var(--line);
+      border-bottom: 1px solid var(--line-soft);
       text-align: right;
       white-space: nowrap;
       font-size: 14px;
@@ -391,6 +393,7 @@
       z-index: 1;
       font-size: 13px;
       font-weight: 900;
+      border-bottom: 1px solid var(--line);
     }
 
     th:first-child, td:first-child { text-align: left; }
@@ -426,6 +429,7 @@
 
     .empty {
       background: #fff;
+      border: 1px solid var(--line);
       border-radius: 8px;
       padding: 28px;
       color: var(--muted);
