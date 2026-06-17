@@ -16,6 +16,10 @@ function num(v) {
   return Number(String(v).replace(/,/g, "").replace(/[^\d.-]/g, "")) || 0;
 }
 
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
 function formatDate(date) {
   if (!date || !isFinite(date.getTime())) return "-";
   return new Intl.DateTimeFormat("en-CA", {
@@ -47,19 +51,6 @@ function daysBetween(fromDate, toDate) {
   return Math.ceil((startOfDay(toDate) - startOfDay(fromDate)) / msPerDay);
 }
 
-function summarizeTrend(monthlyValues) {
-  const positiveValues = monthlyValues.filter(v => v > 0);
-  if (!positiveValues.length) return "판매 흐름 없음";
-  if (monthlyValues.length >= 2) {
-    const prev = monthlyValues[monthlyValues.length - 2];
-    const last = monthlyValues[monthlyValues.length - 1];
-    if (last > 0 && prev > 0 && last >= prev * 1.5) return "최근월 판매 증가";
-    if (last > 0 && prev > 0 && last <= prev * 0.5) return "최근월 판매 감소";
-  }
-  if (positiveValues.length === 1) return "특정월 판매 집중";
-  return "계절 판매 기준";
-}
-
 function monthKey(year, month) {
   return `${year}/${String(month).padStart(2, "0")}`;
 }
@@ -84,15 +75,61 @@ async function readSheet(sheetName) {
   });
 }
 
-/**
- * 품목별 성장률 계산
- * 기준:
- * 올해 1월~현재월 판매량 / 작년 1월~현재월 판매량
- *
- * 너무 튀는 값 방지:
- * 최소 50%
- * 최대 300%
- */
+function extractMonthlySales(row) {
+  const values = [];
+
+  Object.keys(row).forEach(key => {
+    const match = String(key).match(/^(\d{4})\/(\d{2})$/);
+    if (!match) return;
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const qty = num(row[key]);
+
+    values.push({
+      key,
+      year,
+      month,
+      label: `${String(year).slice(2)}.${String(month).padStart(2, "0")}`,
+      qty
+    });
+  });
+
+  return values.sort((a, b) => {
+    if (a.year !== b.year) return a.year - b.year;
+    return a.month - b.month;
+  });
+}
+
+function buildYearlySales(monthlySales) {
+  const map = {};
+
+  monthlySales.forEach(item => {
+    map[item.year] = (map[item.year] || 0) + item.qty;
+  });
+
+  return Object.keys(map)
+    .map(year => ({
+      year: Number(year),
+      qty: map[year]
+    }))
+    .sort((a, b) => a.year - b.year);
+}
+
+function sumRecentMonths(monthlySales, year, endMonth, count) {
+  let total = 0;
+
+  for (let i = count - 1; i >= 0; i--) {
+    const target = addMonths(year, endMonth, -i);
+    const found = monthlySales.find(
+      x => x.year === target.year && x.month === target.month
+    );
+    total += found ? found.qty : 0;
+  }
+
+  return total;
+}
+
 function calcProductGrowthRate(row) {
   const today = new Date();
 
@@ -111,20 +148,50 @@ function calcProductGrowthRate(row) {
   if (prevTotal <= 0 && currentTotal > 0) return 1.3;
   if (prevTotal <= 0) return 1;
 
-  let rate = currentTotal / prevTotal;
-
-  if (rate < 0.5) rate = 0.5;
-  if (rate > 3) rate = 3;
-
-  return rate;
+  return clamp(currentTotal / prevTotal, 0.5, 3);
 }
 
-/**
- * 작년 같은 달 기준 예상판매량 계산
- * 예:
- * 현재 6월, 리드타임 90일이면
- * 작년 6월 + 7월 + 8월 판매량 × 품목별 성장률
- */
+function calcExpectedGrowthRate(row) {
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth() + 1;
+  const monthlySales = extractMonthlySales(row);
+
+  const ytdGrowth = calcProductGrowthRate(row);
+
+  const recent3 = sumRecentMonths(monthlySales, currentYear, currentMonth, 3);
+  const prevRecent3 = sumRecentMonths(monthlySales, currentYear - 1, currentMonth, 3);
+
+  let momentum = 1;
+  if (prevRecent3 > 0) momentum = clamp(recent3 / prevRecent3, 0.6, 2.5);
+  else if (recent3 > 0) momentum = 1.2;
+
+  const expected = clamp((ytdGrowth * 0.65) + (momentum * 0.35), 0.5, 3.5);
+
+  return {
+    expectedGrowthRate: expected,
+    recentMomentumRate: momentum,
+    recent3,
+    prevRecent3
+  };
+}
+
+function summarizeTrend(monthlyValues) {
+  const positiveValues = monthlyValues.filter(v => v > 0);
+  if (!positiveValues.length) return "판매 흐름 없음";
+
+  if (monthlyValues.length >= 2) {
+    const prev = monthlyValues[monthlyValues.length - 2];
+    const last = monthlyValues[monthlyValues.length - 1];
+
+    if (last > 0 && prev > 0 && last >= prev * 1.5) return "최근월 판매 증가";
+    if (last > 0 && prev > 0 && last <= prev * 0.5) return "최근월 판매 감소";
+  }
+
+  if (positiveValues.length === 1) return "특정월 판매 집중";
+  return "계절 판매 기준";
+}
+
 function forecastBySeason(row, leadTimeDays, productGrowthRate) {
   const today = new Date();
 
@@ -185,7 +252,6 @@ app.get("/api/inventory", async (req, res) => {
     salesRows.forEach(row => {
       const name = row["품목별"] || row["품목명"] || row["품목"];
       if (!name || name.includes("총합계")) return;
-
       salesMap[name.trim()] = row;
     });
 
@@ -207,24 +273,35 @@ app.get("/api/inventory", async (req, res) => {
       const salesRow = salesMap[productName];
 
       let productGrowthRate = 1;
+      let expectedGrowthRate = 1;
+      let recentMomentumRate = 1;
       let seasonalForecast = 0;
       let monthlyForecast = 0;
       let forecastDetail = "-";
       let trendSummary = "판매 흐름 없음";
+      let monthlySales = [];
+      let yearlySales = [];
 
       if (salesRow) {
         productGrowthRate = calcProductGrowthRate(salesRow);
 
+        const growth = calcExpectedGrowthRate(salesRow);
+        expectedGrowthRate = growth.expectedGrowthRate;
+        recentMomentumRate = growth.recentMomentumRate;
+
         const forecastResult = forecastBySeason(
           salesRow,
           leadTime,
-          productGrowthRate
+          expectedGrowthRate
         );
 
         seasonalForecast = forecastResult.forecast;
         monthlyForecast = forecastResult.monthlyForecast;
         forecastDetail = forecastResult.detail;
         trendSummary = forecastResult.trendSummary;
+
+        monthlySales = extractMonthlySales(salesRow);
+        yearlySales = buildYearlySales(monthlySales);
       } else {
         seasonalForecast = num(row["작년판매"]);
         monthlyForecast = Math.round(seasonalForecast / Math.ceil(leadTime / 30));
@@ -287,15 +364,19 @@ app.get("/api/inventory", async (req, res) => {
         currentStock,
         incomingStock,
         availableStock,
-
         leadTime,
 
         growthRate: Math.round(productGrowthRate * 100),
+        expectedGrowthRate: Math.round(expectedGrowthRate * 100),
+        recentMomentumRate: Math.round(recentMomentumRate * 100),
 
         monthlyForecast,
         seasonalForecast,
         forecastDetail,
         trendSummary,
+
+        monthlySales,
+        yearlySales,
 
         safetyStock,
         shortage: Math.max(0, shortage),
@@ -309,7 +390,10 @@ app.get("/api/inventory", async (req, res) => {
         status,
         action,
         updatedAt: formatDateTime(updatedAt),
-        priorityScore: (Math.max(0, shortage) * 1000) + Math.max(0, 365 - Math.min(daysLeft, 365)) + (orderDelayDays * 100)
+        priorityScore:
+          (Math.max(0, shortage) * 1000) +
+          Math.max(0, 365 - Math.min(daysLeft, 365)) +
+          (orderDelayDays * 100)
       };
     }).filter(Boolean);
 
