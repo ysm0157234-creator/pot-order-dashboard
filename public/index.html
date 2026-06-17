@@ -13,14 +13,15 @@
       --surface: #ffffff;
       --bg: #f7f8fa;
       --brand: #3182f6;
-      --brand-dark: #1b64da;
-      --brand-soft: #e8f3ff;
       --danger: #f04452;
       --danger-bg: #fff4f4;
       --warning: #f59f00;
       --warning-bg: #fff8e7;
       --safe: #00a661;
       --safe-bg: #eefaf4;
+      --green: #0a8f22;
+      --red: #ff1717;
+      --grid: rgba(120, 120, 120, .42);
       --shadow: 0 18px 42px rgba(25, 31, 40, .07);
       --shadow-soft: 0 8px 24px rgba(25, 31, 40, .045);
     }
@@ -28,21 +29,10 @@
     * { box-sizing: border-box; }
 
     body {
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        "Pretendard",
-        "Apple SD Gothic Neo",
-        "Noto Sans KR",
-        Arial,
-        sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", Arial, sans-serif;
       margin: 0;
-      background:
-        radial-gradient(circle at 20% 0%, rgba(49,130,246,.08), transparent 320px),
-        var(--bg);
+      background: radial-gradient(circle at 20% 0%, rgba(49,130,246,.08), transparent 320px), var(--bg);
       color: var(--ink);
-      letter-spacing: 0;
     }
 
     header, .wrap {
@@ -52,10 +42,7 @@
       padding-right: 30px;
     }
 
-    header {
-      padding-top: 36px;
-      padding-bottom: 20px;
-    }
+    header { padding-top: 36px; padding-bottom: 20px; }
 
     .topbar {
       display: flex;
@@ -100,10 +87,7 @@
       font-weight: 800;
     }
 
-    .wrap {
-      padding-top: 12px;
-      padding-bottom: 48px;
-    }
+    .wrap { padding-top: 12px; padding-bottom: 48px; }
 
     .cards {
       display: grid;
@@ -121,7 +105,6 @@
       color: var(--muted);
       min-height: 108px;
       font-weight: 800;
-      backdrop-filter: blur(10px);
     }
 
     .card b {
@@ -231,10 +214,6 @@
       transition: .18s ease;
     }
 
-    .tab:hover {
-      background: #e9eef5;
-    }
-
     .tab.active {
       background: var(--brand);
       color: #fff;
@@ -266,10 +245,11 @@
     }
 
     .chart-card {
-      background: linear-gradient(180deg, #fbfcfd 0%, #fff 100%);
+      background: #fff;
       border-radius: 26px;
-      padding: 20px;
-      min-height: 410px;
+      padding: 18px;
+      min-height: 480px;
+      overflow-x: auto;
     }
 
     .chart-title-row {
@@ -277,7 +257,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     .chart-card h3 {
@@ -292,27 +272,43 @@
       font-weight: 700;
     }
 
+    .chart-wrap {
+      min-width: 980px;
+    }
+
     .chart {
       width: 100%;
-      height: 320px;
+      height: 390px;
       display: block;
-      overflow: visible;
+      background: #fff;
+      border: 1px solid #7c7c7c;
     }
 
-    .axis-labels {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    .legend {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
       gap: 6px;
-      margin-top: 10px;
-      color: var(--soft);
-      font-size: 11px;
-      font-weight: 700;
     }
 
-    .axis-labels span {
-      text-align: center;
-      white-space: nowrap;
+    .legend i {
+      width: 22px;
+      height: 3px;
+      border-radius: 999px;
+      display: inline-block;
     }
+
+    .legend .green { background: var(--green); }
+    .legend .red { background: var(--red); }
 
     .bar-list {
       display: grid;
@@ -366,10 +362,6 @@
       background: #f2f4f6;
       color: var(--ink);
       font-family: inherit;
-    }
-
-    select {
-      cursor: pointer;
     }
 
     button {
@@ -469,7 +461,6 @@
       .cards, .toolbar { grid-template-columns: 1fr; }
       .section-title { display: block; }
       .bar-row { grid-template-columns: 88px 1fr 70px; }
-      .chart { height: 280px; }
     }
   </style>
 </head>
@@ -507,7 +498,7 @@
 
     <div class="section-title">
       <h2>판매 분석</h2>
-      <span>버튼을 눌러 월별, 품목별, 년별, 기대 성장률을 따로 확인</span>
+      <span>빨간선은 작년 같은 기간, 초록선은 올해 흐름</span>
     </div>
 
     <div class="analysis-box">
@@ -530,10 +521,15 @@
       <div class="chart-card">
         <div class="chart-title-row">
           <h3 id="analysisTitle">월별 판매량</h3>
-          <div id="chartHint" class="chart-hint">모든 월 라벨 표시</div>
+          <div id="chartHint" class="chart-hint">작년 대비 올해 흐름 비교</div>
         </div>
-        <svg id="lineChart" class="chart" viewBox="0 0 980 320" preserveAspectRatio="none"></svg>
-        <div id="axisLabels" class="axis-labels"></div>
+        <div class="chart-wrap">
+          <svg id="lineChart" class="chart" viewBox="0 0 980 390" preserveAspectRatio="none"></svg>
+        </div>
+        <div id="legend" class="legend">
+          <span><i class="red"></i> 작년 같은 기간</span>
+          <span><i class="green"></i> 올해 판매 흐름</span>
+        </div>
         <div id="barChart" class="bar-list hidden"></div>
       </div>
     </div>
@@ -623,74 +619,136 @@
       document.getElementById("analysisMomentum").textContent = item ? pct(item.recentMomentumRate) : "-";
     }
 
-    function showLine(data, title) {
+    function splitCurrentAndPreviousYear(monthlySales) {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const prevYear = currentYear - 1;
+
+      const current = monthlySales
+        .filter(x => x.year === currentYear)
+        .map(x => ({ ...x, compareLabel: `${x.year}.${String(x.month).padStart(2, "0")}` }));
+
+      const previous = monthlySales
+        .filter(x => x.year === prevYear)
+        .map(x => ({ ...x, compareLabel: `${x.year}.${String(x.month).padStart(2, "0")}` }));
+
+      return { current, previous };
+    }
+
+    function showCompareLine(item) {
       const svg = document.getElementById("lineChart");
       const bars = document.getElementById("barChart");
-      const axisLabels = document.getElementById("axisLabels");
-      document.getElementById("analysisTitle").textContent = title;
-      document.getElementById("chartHint").textContent = "모든 월 라벨 표시";
+      const legend = document.getElementById("legend");
+
+      document.getElementById("analysisTitle").textContent = "월별 판매량";
+      document.getElementById("chartHint").textContent = "빨간선: 작년 / 초록선: 올해";
       svg.classList.remove("hidden");
-      axisLabels.classList.remove("hidden");
+      legend.classList.remove("hidden");
       bars.classList.add("hidden");
 
-      const pointsData = data || [];
-      const max = Math.max(...pointsData.map(x => x.qty), 1);
-      const width = 980;
-      const height = 320;
-      const padX = 28;
-      const padTop = 24;
-      const padBottom = 46;
-
-      if (!pointsData.length) {
-        svg.innerHTML = `<text x="490" y="165" text-anchor="middle" fill="#8b95a1" font-size="15">판매량 데이터가 없습니다</text>`;
-        axisLabels.innerHTML = "";
+      const monthlySales = item ? item.monthlySales : [];
+      if (!monthlySales.length) {
+        svg.innerHTML = `<text x="490" y="200" text-anchor="middle" fill="#8b95a1" font-size="15">판매량 데이터가 없습니다</text>`;
         return;
       }
 
-      const step = pointsData.length > 1 ? (width - padX * 2) / (pointsData.length - 1) : 0;
+      const { current, previous } = splitCurrentAndPreviousYear(monthlySales);
+      const max = Math.max(...current.map(x => x.qty), ...previous.map(x => x.qty), 1);
 
-      const points = pointsData.map((item, index) => {
-        const x = padX + step * index;
-        const y = height - padBottom - (item.qty / max) * (height - padTop - padBottom);
-        return { ...item, x, y };
+      const width = 980;
+      const height = 390;
+      const left = 52;
+      const right = 24;
+      const top = 20;
+      const bottom = 70;
+      const plotW = width - left - right;
+      const plotH = height - top - bottom;
+
+      const months = Array.from({ length: 12 }, (_, i) => i + 1);
+
+      function xForMonth(month) {
+        return left + ((month - 1) / 11) * plotW;
+      }
+
+      function yForValue(value) {
+        return top + plotH - (value / max) * plotH;
+      }
+
+      function valueAt(data, month) {
+        const found = data.find(x => x.month === month);
+        return found ? found.qty : null;
+      }
+
+      function pointsFor(data) {
+        return months
+          .map(month => {
+            const qty = valueAt(data, month);
+            if (qty === null) return null;
+            return { month, qty, x: xForMonth(month), y: yForValue(qty) };
+          })
+          .filter(Boolean);
+      }
+
+      function polyline(points) {
+        return points.map(p => `${p.x},${p.y}`).join(" ");
+      }
+
+      const currentPoints = pointsFor(current);
+      const previousPoints = pointsFor(previous);
+
+      const yTicks = [0, .25, .5, .75, 1].map(rate => {
+        const value = Math.round(max * rate);
+        const y = yForValue(value);
+        return { value, y };
       });
 
-      const line = points.map(p => `${p.x},${p.y}`).join(" ");
-      const area = `${padX},${height - padBottom} ${line} ${width - padX},${height - padBottom}`;
+      const gridY = yTicks.map(t => `
+        <line x1="${left}" x2="${width - right}" y1="${t.y}" y2="${t.y}" stroke="var(--grid)" stroke-width="1"></line>
+        <text x="${left - 10}" y="${t.y + 4}" text-anchor="end" fill="#6b7684" font-size="12">${fmt(t.value)}</text>
+      `).join("");
 
-      const grid = [0, .25, .5, .75, 1].map(rate => {
-        const y = height - padBottom - rate * (height - padTop - padBottom);
-        return `<line x1="${padX}" x2="${width - padX}" y1="${y}" y2="${y}" stroke="#edf0f3" stroke-width="1"></line>`;
+      const gridX = months.map(month => {
+        const x = xForMonth(month);
+        return `
+          <line x1="${x}" x2="${x}" y1="${top}" y2="${height - bottom}" stroke="var(--grid)" stroke-width="1"></line>
+          <text x="${x}" y="${height - 38}" text-anchor="end" transform="rotate(-35 ${x} ${height - 38})" fill="#191f28" font-size="12">${month}월</text>
+        `;
       }).join("");
 
+      function circles(points, color) {
+        return points.map(p => `
+          <circle cx="${p.x}" cy="${p.y}" r="5.2" fill="${color}" stroke="${color}" stroke-width="1"></circle>
+        `).join("");
+      }
+
       svg.innerHTML = `
-        <defs>
-          <linearGradient id="lineFill" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stop-color="#3182f6" stop-opacity=".22"></stop>
-            <stop offset="100%" stop-color="#3182f6" stop-opacity=".02"></stop>
-          </linearGradient>
-        </defs>
-        ${grid}
-        <polyline points="${area}" fill="url(#lineFill)"></polyline>
-        <polyline points="${line}" fill="none" stroke="#3182f6" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
-        ${points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="5" fill="#3182f6" stroke="#fff" stroke-width="3"></circle>`).join("")}
-        ${points.map((p, index) => {
-          if (index % 2 !== 0 && points.length > 14) return "";
-          return `<text x="${p.x}" y="${Math.max(18, p.y - 13)}" text-anchor="middle" fill="#6b7684" font-size="12" font-weight="700">${fmt(p.qty)}</text>`;
+        <rect x="0" y="0" width="${width}" height="${height}" fill="#fff"></rect>
+        ${gridY}
+        ${gridX}
+        <line x1="${left}" x2="${left}" y1="${top}" y2="${height - bottom}" stroke="#555" stroke-width="1.2"></line>
+        <line x1="${left}" x2="${width - right}" y1="${height - bottom}" y2="${height - bottom}" stroke="#555" stroke-width="1.2"></line>
+
+        ${previousPoints.length ? `<polyline points="${polyline(previousPoints)}" fill="none" stroke="var(--red)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>` : ""}
+        ${currentPoints.length ? `<polyline points="${polyline(currentPoints)}" fill="none" stroke="var(--green)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>` : ""}
+
+        ${circles(previousPoints, "var(--red)")}
+        ${circles(currentPoints, "var(--green)")}
+
+        ${currentPoints.map((p, index) => {
+          if (index % 2 !== 0 && currentPoints.length > 8) return "";
+          return `<text x="${p.x}" y="${Math.max(16, p.y - 12)}" text-anchor="middle" fill="#0a681b" font-size="12" font-weight="700">${fmt(p.qty)}</text>`;
         }).join("")}
       `;
-
-      axisLabels.innerHTML = pointsData.map(item => `<span>${esc(item.label)}</span>`).join("");
     }
 
     function showBars(data, title, valueKey = "qty", valueSuffix = "") {
       const svg = document.getElementById("lineChart");
       const bars = document.getElementById("barChart");
-      const axisLabels = document.getElementById("axisLabels");
+      const legend = document.getElementById("legend");
       document.getElementById("analysisTitle").textContent = title;
       document.getElementById("chartHint").textContent = "상위 항목 기준";
       svg.classList.add("hidden");
-      axisLabels.classList.add("hidden");
+      legend.classList.add("hidden");
       bars.classList.remove("hidden");
 
       const rows = data || [];
@@ -721,7 +779,7 @@
       setAnalysisMetrics(item);
 
       if (activeAnalysisView === "monthly") {
-        showLine(item ? item.monthlySales : [], "월별 판매량");
+        showCompareLine(item);
       }
 
       if (activeAnalysisView === "product") {
