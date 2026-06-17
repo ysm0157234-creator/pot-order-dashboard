@@ -11,17 +11,24 @@
       --soft: #8b95a1;
       --line: #edf0f3;
       --surface: #ffffff;
-      --bg: #f7f8fa;
+      --bg: #f8f9fb;
+
       --brand: #3182f6;
-      --danger: #f04452;
-      --danger-bg: #fff4f4;
-      --warning: #f59f00;
-      --warning-bg: #fff8e7;
-      --safe: #00a661;
-      --safe-bg: #eefaf4;
-      --green: #0a8f22;
-      --red: #ff1717;
-      --grid: rgba(120, 120, 120, .42);
+      --brand-dark: #1b64da;
+      --brand-soft: #e8f3ff;
+      --brand-softer: #f3f8ff;
+
+      --danger: #3182f6;
+      --danger-bg: #f3f8ff;
+      --warning: #3182f6;
+      --warning-bg: #f3f8ff;
+      --safe: #3182f6;
+      --safe-bg: #f3f8ff;
+
+      --green: #3182f6;
+      --red: #8b95a1;
+      --grid: rgba(139, 149, 161, .38);
+
       --shadow: 0 18px 42px rgba(25, 31, 40, .07);
       --shadow-soft: 0 8px 24px rgba(25, 31, 40, .045);
     }
@@ -31,7 +38,7 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", Arial, sans-serif;
       margin: 0;
-      background: radial-gradient(circle at 20% 0%, rgba(49,130,246,.08), transparent 320px), var(--bg);
+      background: radial-gradient(circle at 20% 0%, rgba(49,130,246,.10), transparent 340px), var(--bg);
       color: var(--ink);
     }
 
@@ -76,15 +83,15 @@
     }
 
     .update-pill {
-      background: rgba(255,255,255,.88);
-      border: 1px solid rgba(237,240,243,.8);
+      background: #fff;
+      border: 1px solid var(--line);
       border-radius: 999px;
-      color: var(--muted);
+      color: var(--brand);
       padding: 12px 16px;
       white-space: nowrap;
       box-shadow: var(--shadow-soft);
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 900;
     }
 
     .wrap { padding-top: 12px; padding-bottom: 48px; }
@@ -97,8 +104,8 @@
     }
 
     .card {
-      background: rgba(255,255,255,.92);
-      border: 1px solid rgba(237,240,243,.9);
+      background: #fff;
+      border: 1px solid var(--line);
       border-radius: 24px;
       padding: 18px;
       box-shadow: var(--shadow-soft);
@@ -116,9 +123,15 @@
       font-weight: 900;
     }
 
-    .card:nth-child(1) { background: linear-gradient(180deg, #fff 0, var(--danger-bg) 100%); }
-    .card:nth-child(2) { background: linear-gradient(180deg, #fff 0, var(--warning-bg) 100%); }
-    .card:nth-child(3) { background: linear-gradient(180deg, #fff 0, var(--safe-bg) 100%); }
+    .card:nth-child(1),
+    .card:nth-child(2),
+    .card:nth-child(3),
+    .card:nth-child(4),
+    .card:nth-child(5),
+    .card:nth-child(6),
+    .card:nth-child(7) {
+      background: linear-gradient(180deg, #fff 0%, var(--brand-softer) 100%);
+    }
 
     .section-title {
       margin: 32px 0 14px;
@@ -148,7 +161,8 @@
     }
 
     .urgent-item {
-      background: var(--surface);
+      background: #fff;
+      border: 1px solid var(--line);
       border-radius: 24px;
       padding: 20px;
       box-shadow: var(--shadow-soft);
@@ -163,7 +177,7 @@
       top: 0;
       width: 5px;
       height: 100%;
-      background: var(--danger);
+      background: var(--brand);
     }
 
     .urgent-item strong {
@@ -180,8 +194,8 @@
     }
 
     .analysis-box {
-      background: rgba(255,255,255,.94);
-      border: 1px solid rgba(237,240,243,.9);
+      background: #fff;
+      border: 1px solid var(--line);
       border-radius: 30px;
       padding: 20px;
       box-shadow: var(--shadow);
@@ -228,7 +242,7 @@
     }
 
     .metric {
-      background: #f8f9fb;
+      background: var(--brand-softer);
       border-radius: 22px;
       padding: 16px 17px;
       color: var(--muted);
@@ -238,7 +252,7 @@
 
     .metric b {
       display: block;
-      color: var(--ink);
+      color: var(--brand);
       font-size: 25px;
       margin-top: 9px;
       font-weight: 900;
@@ -246,6 +260,7 @@
 
     .chart-card {
       background: #fff;
+      border: 1px solid var(--line);
       border-radius: 26px;
       padding: 18px;
       min-height: 480px;
@@ -272,16 +287,15 @@
       font-weight: 700;
     }
 
-    .chart-wrap {
-      min-width: 980px;
-    }
+    .chart-wrap { min-width: 980px; }
 
     .chart {
       width: 100%;
       height: 390px;
       display: block;
       background: #fff;
-      border: 1px solid #7c7c7c;
+      border: 1px solid #d8dee8;
+      border-radius: 14px;
     }
 
     .legend {
@@ -307,8 +321,8 @@
       display: inline-block;
     }
 
-    .legend .green { background: var(--green); }
-    .legend .red { background: var(--red); }
+    .legend .green { background: var(--brand); }
+    .legend .red { background: #8b95a1; }
 
     .bar-list {
       display: grid;
@@ -348,7 +362,8 @@
       gap: 10px;
       margin: 20px 0 16px;
       align-items: center;
-      background: rgba(255,255,255,.94);
+      background: #fff;
+      border: 1px solid var(--line);
       border-radius: 24px;
       padding: 14px;
       box-shadow: var(--shadow-soft);
@@ -383,6 +398,7 @@
       overflow-x: auto;
       border-radius: 26px;
       background: #fff;
+      border: 1px solid var(--line);
       box-shadow: var(--shadow-soft);
     }
 
@@ -411,18 +427,21 @@
     }
 
     th:first-child, td:first-child { text-align: left; }
-    tbody tr:hover { background: #f8f9fb; }
+    tbody tr:hover { background: var(--brand-softer); }
 
-    tr.danger { background: var(--danger-bg); }
-    tr.warning { background: var(--warning-bg); }
-    tr.safe { background: var(--safe-bg); }
+    tr.danger,
+    tr.warning,
+    tr.safe {
+      background: #fff;
+    }
 
     .status-pill {
       display: inline-block;
       padding: 7px 10px;
       border-radius: 999px;
-      background: rgba(255,255,255,.8);
-      font-weight: 800;
+      background: var(--brand-soft);
+      color: var(--brand);
+      font-weight: 900;
     }
 
     .small {
@@ -432,14 +451,14 @@
     }
 
     .danger-text {
-      color: var(--danger);
+      color: var(--brand);
       font-weight: 900;
     }
 
     .hidden { display: none; }
 
     .empty {
-      background: var(--surface);
+      background: #fff;
       border-radius: 18px;
       padding: 28px;
       color: var(--muted);
@@ -481,13 +500,13 @@
 
   <div class="wrap">
     <div class="cards">
-      <div class="card">🔴 즉시발주 <b id="danger">-</b></div>
-      <div class="card">🟡 주의 <b id="warning">-</b></div>
-      <div class="card">🟢 안전 <b id="safe">-</b></div>
+      <div class="card">즉시발주 <b id="danger">-</b></div>
+      <div class="card">주의 <b id="warning">-</b></div>
+      <div class="card">안전 <b id="safe">-</b></div>
       <div class="card">총 부족 예상 <b id="shortage">-</b></div>
-      <div class="card">🔥 30일 내 품절 <b id="within30">-</b></div>
-      <div class="card">🔥 60일 내 품절 <b id="within60">-</b></div>
-      <div class="card">🔥 90일 내 품절 <b id="within90">-</b></div>
+      <div class="card">30일 내 품절 <b id="within30">-</b></div>
+      <div class="card">60일 내 품절 <b id="within60">-</b></div>
+      <div class="card">90일 내 품절 <b id="within90">-</b></div>
     </div>
 
     <div class="section-title">
@@ -498,7 +517,7 @@
 
     <div class="section-title">
       <h2>판매 분석</h2>
-      <span>빨간선은 작년 같은 기간, 초록선은 올해 흐름</span>
+      <span>파란색은 올해 흐름, 회색은 작년 같은 기간</span>
     </div>
 
     <div class="analysis-box">
@@ -541,9 +560,9 @@
         <option value="즉시">즉시발주</option>
         <option value="주의">주의</option>
         <option value="안전">안전</option>
-        <option value="30">🔥 30일 내 품절</option>
-        <option value="60">🔥 60일 내 품절</option>
-        <option value="90">🔥 90일 내 품절</option>
+        <option value="30">30일 내 품절</option>
+        <option value="60">60일 내 품절</option>
+        <option value="90">90일 내 품절</option>
       </select>
       <select id="sortBy">
         <option value="priority">우선순위 높은 순</option>
@@ -624,13 +643,8 @@
       const currentYear = now.getFullYear();
       const prevYear = currentYear - 1;
 
-      const current = monthlySales
-        .filter(x => x.year === currentYear)
-        .map(x => ({ ...x, compareLabel: `${x.year}.${String(x.month).padStart(2, "0")}` }));
-
-      const previous = monthlySales
-        .filter(x => x.year === prevYear)
-        .map(x => ({ ...x, compareLabel: `${x.year}.${String(x.month).padStart(2, "0")}` }));
+      const current = monthlySales.filter(x => x.year === currentYear);
+      const previous = monthlySales.filter(x => x.year === prevYear);
 
       return { current, previous };
     }
@@ -641,7 +655,7 @@
       const legend = document.getElementById("legend");
 
       document.getElementById("analysisTitle").textContent = "월별 판매량";
-      document.getElementById("chartHint").textContent = "빨간선: 작년 / 초록선: 올해";
+      document.getElementById("chartHint").textContent = "파란색: 올해 / 회색: 작년";
       svg.classList.remove("hidden");
       legend.classList.remove("hidden");
       bars.classList.add("hidden");
@@ -704,20 +718,20 @@
 
       const gridY = yTicks.map(t => `
         <line x1="${left}" x2="${width - right}" y1="${t.y}" y2="${t.y}" stroke="var(--grid)" stroke-width="1"></line>
-        <text x="${left - 10}" y="${t.y + 4}" text-anchor="end" fill="#6b7684" font-size="12">${fmt(t.value)}</text>
+        <text x="${left - 10}" y="${t.y + 4}" text-anchor="end" fill="#8b95a1" font-size="12">${fmt(t.value)}</text>
       `).join("");
 
       const gridX = months.map(month => {
         const x = xForMonth(month);
         return `
           <line x1="${x}" x2="${x}" y1="${top}" y2="${height - bottom}" stroke="var(--grid)" stroke-width="1"></line>
-          <text x="${x}" y="${height - 38}" text-anchor="end" transform="rotate(-35 ${x} ${height - 38})" fill="#191f28" font-size="12">${month}월</text>
+          <text x="${x}" y="${height - 38}" text-anchor="end" transform="rotate(-35 ${x} ${height - 38})" fill="#6b7684" font-size="12">${month}월</text>
         `;
       }).join("");
 
       function circles(points, color) {
         return points.map(p => `
-          <circle cx="${p.x}" cy="${p.y}" r="5.2" fill="${color}" stroke="${color}" stroke-width="1"></circle>
+          <circle cx="${p.x}" cy="${p.y}" r="5.2" fill="${color}" stroke="#fff" stroke-width="2"></circle>
         `).join("");
       }
 
@@ -725,18 +739,18 @@
         <rect x="0" y="0" width="${width}" height="${height}" fill="#fff"></rect>
         ${gridY}
         ${gridX}
-        <line x1="${left}" x2="${left}" y1="${top}" y2="${height - bottom}" stroke="#555" stroke-width="1.2"></line>
-        <line x1="${left}" x2="${width - right}" y1="${height - bottom}" y2="${height - bottom}" stroke="#555" stroke-width="1.2"></line>
+        <line x1="${left}" x2="${left}" y1="${top}" y2="${height - bottom}" stroke="#d8dee8" stroke-width="1.2"></line>
+        <line x1="${left}" x2="${width - right}" y1="${height - bottom}" y2="${height - bottom}" stroke="#d8dee8" stroke-width="1.2"></line>
 
-        ${previousPoints.length ? `<polyline points="${polyline(previousPoints)}" fill="none" stroke="var(--red)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>` : ""}
-        ${currentPoints.length ? `<polyline points="${polyline(currentPoints)}" fill="none" stroke="var(--green)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>` : ""}
+        ${previousPoints.length ? `<polyline points="${polyline(previousPoints)}" fill="none" stroke="#8b95a1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>` : ""}
+        ${currentPoints.length ? `<polyline points="${polyline(currentPoints)}" fill="none" stroke="var(--brand)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>` : ""}
 
-        ${circles(previousPoints, "var(--red)")}
-        ${circles(currentPoints, "var(--green)")}
+        ${circles(previousPoints, "#8b95a1")}
+        ${circles(currentPoints, "var(--brand)")}
 
         ${currentPoints.map((p, index) => {
           if (index % 2 !== 0 && currentPoints.length > 8) return "";
-          return `<text x="${p.x}" y="${Math.max(16, p.y - 12)}" text-anchor="middle" fill="#0a681b" font-size="12" font-weight="700">${fmt(p.qty)}</text>`;
+          return `<text x="${p.x}" y="${Math.max(16, p.y - 12)}" text-anchor="middle" fill="var(--brand)" font-size="12" font-weight="800">${fmt(p.qty)}</text>`;
         }).join("")}
       `;
     }
