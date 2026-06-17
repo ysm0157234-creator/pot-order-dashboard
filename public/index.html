@@ -12,7 +12,6 @@
       --surface: #ffffff;
       --bg: #f8f9fb;
       --brand: #3182f6;
-      --brand-soft: #e8f3ff;
       --danger: #f04452;
       --danger-bg: #fff4f4;
       --warning: #f59f00;
@@ -21,7 +20,9 @@
       --safe-bg: #eefaf4;
       --shadow: 0 8px 24px rgba(25, 31, 40, .06);
     }
+
     * { box-sizing: border-box; }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, "Noto Sans KR", sans-serif;
       margin: 0;
@@ -29,25 +30,43 @@
       color: var(--ink);
       letter-spacing: 0;
     }
+
     header {
       max-width: 1440px;
       margin: 0 auto;
       padding: 34px 28px 20px;
     }
+
     .topbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 20px;
     }
+
     .eyebrow {
       color: var(--brand);
       font-size: 12px;
       font-weight: 800;
       margin-bottom: 10px;
     }
-    h1 { margin: 0 0 10px; font-size: 32px; line-height: 1.25; font-weight: 800; }
-    .subline { color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; font-size: 15px; line-height: 1.5; }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 32px;
+      line-height: 1.25;
+      font-weight: 800;
+    }
+
+    .subline {
+      color: var(--muted);
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
     .update-pill {
       background: var(--surface);
       border-radius: 999px;
@@ -58,8 +77,20 @@
       font-size: 13px;
       font-weight: 700;
     }
-    .wrap { max-width: 1440px; margin: 0 auto; padding: 12px 28px 44px; }
-    .cards { display: grid; grid-template-columns: repeat(7, minmax(132px, 1fr)); gap: 12px; margin-bottom: 26px; }
+
+    .wrap {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 12px 28px 44px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(132px, 1fr));
+      gap: 12px;
+      margin-bottom: 26px;
+    }
+
     .card {
       background: var(--surface);
       border-radius: 18px;
@@ -69,14 +100,46 @@
       min-height: 104px;
       font-weight: 700;
     }
-    .card b { display: block; font-size: 30px; margin-top: 14px; color: var(--ink); line-height: 1; }
+
+    .card b {
+      display: block;
+      font-size: 30px;
+      margin-top: 14px;
+      color: var(--ink);
+      line-height: 1;
+    }
+
     .card:nth-child(1) { background: linear-gradient(180deg, #fff 0, var(--danger-bg) 100%); }
     .card:nth-child(2) { background: linear-gradient(180deg, #fff 0, var(--warning-bg) 100%); }
     .card:nth-child(3) { background: linear-gradient(180deg, #fff 0, var(--safe-bg) 100%); }
-    .section-title { margin: 30px 0 14px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
-    .section-title h2 { margin: 0; font-size: 22px; line-height: 1.35; font-weight: 800; }
-    .section-title span { color: var(--muted); font-size: 14px; }
-    .urgent-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(292px, 1fr)); gap: 14px; margin-bottom: 24px; }
+
+    .section-title {
+      margin: 30px 0 14px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.35;
+      font-weight: 800;
+    }
+
+    .section-title span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .urgent-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(292px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
     .urgent-item {
       background: var(--surface);
       border-radius: 20px;
@@ -85,6 +148,7 @@
       position: relative;
       overflow: hidden;
     }
+
     .urgent-item::before {
       content: "";
       position: absolute;
@@ -94,8 +158,117 @@
       height: 100%;
       background: var(--danger);
     }
-    .urgent-item strong { display: block; margin-bottom: 10px; font-size: 17px; }
-    .urgent-item .meta { color: var(--muted); font-size: 14px; line-height: 1.65; }
+
+    .urgent-item strong {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 17px;
+    }
+
+    .urgent-item .meta {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .analysis-panel {
+      background: var(--surface);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-bottom: 26px;
+    }
+
+    .analysis-head {
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) repeat(3, minmax(120px, 180px));
+      gap: 12px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+
+    .analysis-head select {
+      width: 100%;
+    }
+
+    .metric {
+      background: #f8f9fb;
+      border-radius: 18px;
+      padding: 15px 16px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .metric b {
+      display: block;
+      color: var(--ink);
+      font-size: 24px;
+      margin-top: 8px;
+      line-height: 1;
+    }
+
+    .charts {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 14px;
+    }
+
+    .chart-card {
+      background: #fbfcfd;
+      border-radius: 20px;
+      padding: 16px;
+      min-height: 280px;
+    }
+
+    .chart-card h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+
+    .chart {
+      width: 100%;
+      height: 230px;
+      display: block;
+    }
+
+    .chart-labels {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 6px;
+      gap: 8px;
+    }
+
+    .bar-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 54px 1fr 74px;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .bar-track {
+      height: 12px;
+      background: #edf0f3;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: var(--brand);
+      border-radius: 999px;
+    }
+
     .toolbar {
       display: grid;
       grid-template-columns: minmax(240px, 1fr) 170px 200px auto;
@@ -107,6 +280,7 @@
       padding: 14px;
       box-shadow: var(--shadow);
     }
+
     input, select, button {
       padding: 13px 14px;
       border: 0;
@@ -115,35 +289,114 @@
       background: #f2f4f6;
       color: var(--ink);
     }
-    input { flex: 1; }
-    button { cursor: pointer; min-width: 104px; font-weight: 800; }
-    button.active { background: var(--brand); color: #fff; }
-    input:focus, select:focus, button:focus { outline: 3px solid rgba(49,130,246,.18); }
-    .table-box { overflow-x: auto; border-radius: 22px; background: #fff; box-shadow: var(--shadow); }
-    table { width: 100%; border-collapse: collapse; background: #fff; }
-    th, td { padding: 15px 14px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; font-size: 14px; }
-    th { background: #fff; color: #8b95a1; position: sticky; top: 0; z-index: 1; font-size: 13px; font-weight: 800; }
-    th:first-child, td:first-child { text-align: left; }
-    tbody tr:hover { background: #f8f9fb; }
+
+    button {
+      cursor: pointer;
+      min-width: 104px;
+      font-weight: 800;
+    }
+
+    button.active {
+      background: var(--brand);
+      color: #fff;
+    }
+
+    input:focus, select:focus, button:focus {
+      outline: 3px solid rgba(49,130,246,.18);
+    }
+
+    .table-box {
+      overflow-x: auto;
+      border-radius: 22px;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+
+    th, td {
+      padding: 15px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: right;
+      white-space: nowrap;
+      font-size: 14px;
+    }
+
+    th {
+      background: #fff;
+      color: #8b95a1;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    th:first-child, td:first-child {
+      text-align: left;
+    }
+
+    tbody tr:hover {
+      background: #f8f9fb;
+    }
+
     tr.danger { background: var(--danger-bg); }
     tr.warning { background: var(--warning-bg); }
     tr.safe { background: var(--safe-bg); }
-    .status { font-weight: 700; }
-    .status-pill { display: inline-block; padding: 7px 10px; border-radius: 999px; background: rgba(255,255,255,.8); }
-    .small { font-size: 12px; color: var(--muted); line-height: 1.45; }
-    .danger-text { color: var(--danger); font-weight: 700; }
+
+    .status {
+      font-weight: 700;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.8);
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .danger-text {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
     .hidden { display: none; }
-    .empty { background: var(--surface); border-radius: 18px; padding: 22px; color: var(--muted); text-align: center; }
+
+    .empty {
+      background: var(--surface);
+      border-radius: 18px;
+      padding: 22px;
+      color: var(--muted);
+      text-align: center;
+    }
+
     @media (max-width: 1200px) {
       .cards { grid-template-columns: repeat(2, 1fr); }
       .toolbar { grid-template-columns: 1fr 1fr; }
+      .analysis-head { grid-template-columns: 1fr 1fr; }
+      .charts { grid-template-columns: 1fr; }
     }
+
     @media (max-width: 680px) {
-      header, .wrap { padding-left: 18px; padding-right: 18px; }
+      header, .wrap {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
       h1 { font-size: 27px; }
       .topbar { display: block; }
       .update-pill { display: inline-block; margin-top: 16px; }
-      .cards, .toolbar { grid-template-columns: 1fr; }
+      .cards, .toolbar, .analysis-head { grid-template-columns: 1fr; }
       .section-title { display: block; }
     }
   </style>
@@ -156,7 +409,7 @@
         <h1>화분·상토 발주 대시보드</h1>
         <div class="subline">
           <span>작년 같은 시기 판매량 × 성장률 + 안전재고 기준</span>
-          <span>품절 위험과 발주 지연을 우선 표시</span>
+          <span>월별·년별 판매량과 기대 성장률까지 확인</span>
         </div>
       </div>
       <div id="updatedAt" class="update-pill">마지막 업데이트: -</div>
@@ -180,6 +433,33 @@
     </div>
     <div id="urgentList" class="urgent-list"></div>
 
+    <div class="section-title">
+      <h2>판매 분석</h2>
+      <span>품목별 월별·년별 판매량과 앞으로의 기대 성장률</span>
+    </div>
+
+    <div class="analysis-panel">
+      <div class="analysis-head">
+        <select id="analysisProduct"></select>
+        <div class="metric">현재 성장률 <b id="analysisGrowth">-</b></div>
+        <div class="metric">기대 성장률 <b id="analysisExpected">-</b></div>
+        <div class="metric">최근 흐름 <b id="analysisMomentum">-</b></div>
+      </div>
+
+      <div class="charts">
+        <div class="chart-card">
+          <h3>월별 판매량</h3>
+          <svg id="monthlyChart" class="chart" viewBox="0 0 720 230" preserveAspectRatio="none"></svg>
+          <div id="monthlyLabels" class="chart-labels"></div>
+        </div>
+
+        <div class="chart-card">
+          <h3>년별 판매량</h3>
+          <div id="yearlyBars" class="bar-list"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="toolbar">
       <input id="search" placeholder="품목명 검색 예: 코스모포트 블랙110L" />
       <select id="statusFilter">
@@ -196,6 +476,7 @@
         <option value="stockout">품절예상일 빠른 순</option>
         <option value="shortage">부족수량 큰 순</option>
         <option value="delay">발주 지연 큰 순</option>
+        <option value="growth">기대성장률 높은 순</option>
         <option value="name">품목명 순</option>
       </select>
       <button id="viewToggle" type="button" class="active">간단 보기</button>
@@ -214,6 +495,7 @@
             <th>품절예상일</th>
             <th>권장발주일</th>
             <th>발주지연</th>
+            <th>기대성장률</th>
             <th>품절구간</th>
             <th>상태</th>
             <th>추천</th>
@@ -234,7 +516,9 @@
   <script>
     let inventory = [];
     let compactView = true;
+
     const fmt = (n) => Number(n || 0).toLocaleString();
+    const pct = (n) => `${Number(n || 0).toLocaleString()}%`;
     const esc = (v) => String(v ?? "").replace(/[&<>"']/g, ch => ({
       "&": "&amp;",
       "<": "&lt;",
@@ -273,6 +557,7 @@
         if (sortBy === "shortage") return b.shortage - a.shortage;
         if (sortBy === "delay") return b.orderDelayDays - a.orderDelayDays;
         if (sortBy === "stockout") return a.daysLeft - b.daysLeft;
+        if (sortBy === "growth") return b.expectedGrowthRate - a.expectedGrowthRate;
         if (sortBy === "name") return a.productName.localeCompare(b.productName, "ko");
         return b.priorityScore - a.priorityScore;
       });
@@ -292,6 +577,7 @@
           <td>${item.stockoutDate || "-"}</td>
           <td>${item.recommendedOrderDate || "-"}</td>
           <td>${item.orderDelayDays > 0 ? `<span class="danger-text">D+${fmt(item.orderDelayDays)}</span>` : "-"}</td>
+          <td>${pct(item.expectedGrowthRate)}</td>
           <td>${esc(item.stockoutGroup || "안전")}</td>
           <td class="status"><span class="status-pill">${esc(item.status)}</span></td>
           <td>${esc(item.action)}</td>
@@ -300,13 +586,13 @@
           <td class="detail-col ${compactView ? "hidden" : ""}">${fmt(item.seasonalForecast)}</td>
           <td class="small detail-col ${compactView ? "hidden" : ""}">${esc(item.forecastDetail || "-")}</td>
           <td class="small detail-col ${compactView ? "hidden" : ""}">${esc(item.trendSummary || "-")}</td>
-          <td class="detail-col ${compactView ? "hidden" : ""}">${item.growthRate}%</td>
+          <td class="detail-col ${compactView ? "hidden" : ""}">${pct(item.growthRate)}</td>
           <td class="detail-col ${compactView ? "hidden" : ""}">${fmt(item.safetyStock)}</td>
         </tr>
       `).join("");
 
       if (!rows.length) {
-        tbody.innerHTML = `<tr><td colspan="19" class="empty">조건에 맞는 품목이 없습니다.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="20" class="empty">조건에 맞는 품목이 없습니다.</td></tr>`;
       }
     }
 
@@ -326,9 +612,103 @@
         <div class="urgent-item">
           <strong>${esc(item.productName)}</strong>
           <div class="meta">
-            부족 ${fmt(item.shortage)}개 · 품절예상 ${item.stockoutDate || "-"} · 권장발주 ${item.recommendedOrderDate || "-"}
+            부족 ${fmt(item.shortage)}개 · 품절예상 ${item.stockoutDate || "-"} · 기대성장률 ${pct(item.expectedGrowthRate)}
             ${item.orderDelayDays > 0 ? `<br><span class="danger-text">발주 ${fmt(item.orderDelayDays)}일 지연</span>` : ""}
           </div>
+        </div>
+      `).join("");
+    }
+
+    function setupAnalysisSelect() {
+      const select = document.getElementById("analysisProduct");
+      const candidates = inventory
+        .filter(item => item.monthlySales && item.monthlySales.length)
+        .sort((a, b) => b.priorityScore - a.priorityScore);
+
+      select.innerHTML = candidates.map(item =>
+        `<option value="${esc(item.productName)}">${esc(item.productName)}</option>`
+      ).join("");
+
+      if (candidates.length) {
+        select.value = candidates[0].productName;
+        renderAnalysis(candidates[0]);
+      } else {
+        renderAnalysis(null);
+      }
+    }
+
+    function renderAnalysisByName(productName) {
+      const item = inventory.find(x => x.productName === productName);
+      renderAnalysis(item);
+    }
+
+    function renderAnalysis(item) {
+      document.getElementById("analysisGrowth").textContent = item ? pct(item.growthRate) : "-";
+      document.getElementById("analysisExpected").textContent = item ? pct(item.expectedGrowthRate) : "-";
+      document.getElementById("analysisMomentum").textContent = item ? pct(item.recentMomentumRate) : "-";
+
+      renderMonthlyChart(item?.monthlySales || []);
+      renderYearlyBars(item?.yearlySales || []);
+    }
+
+    function renderMonthlyChart(monthlySales) {
+      const svg = document.getElementById("monthlyChart");
+      const labels = document.getElementById("monthlyLabels");
+      const data = monthlySales.slice(-18);
+      const max = Math.max(...data.map(x => x.qty), 1);
+      const width = 720;
+      const height = 230;
+      const pad = 18;
+      const step = data.length > 1 ? (width - pad * 2) / (data.length - 1) : 0;
+
+      if (!data.length) {
+        svg.innerHTML = `<text x="360" y="120" text-anchor="middle" fill="#8b95a1" font-size="14">판매량 데이터가 없습니다</text>`;
+        labels.innerHTML = "";
+        return;
+      }
+
+      const points = data.map((item, index) => {
+        const x = pad + step * index;
+        const y = height - pad - ((item.qty / max) * (height - pad * 2));
+        return { x, y, ...item };
+      });
+
+      const line = points.map(p => `${p.x},${p.y}`).join(" ");
+      const area = `${pad},${height - pad} ${line} ${width - pad},${height - pad}`;
+
+      svg.innerHTML = `
+        <polyline points="${area}" fill="rgba(49,130,246,.10)" stroke="none"></polyline>
+        <polyline points="${line}" fill="none" stroke="#3182f6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>
+        ${points.map(p => `
+          <circle cx="${p.x}" cy="${p.y}" r="5" fill="#3182f6"></circle>
+          <text x="${p.x}" y="${Math.max(14, p.y - 10)}" text-anchor="middle" fill="#6b7684" font-size="11">${fmt(p.qty)}</text>
+        `).join("")}
+      `;
+
+      const pick = data.filter((_, i) =>
+        i === 0 || i === data.length - 1 || i === Math.floor(data.length / 2)
+      );
+
+      labels.innerHTML = pick.map(x => `<span>${esc(x.label)}</span>`).join("");
+    }
+
+    function renderYearlyBars(yearlySales) {
+      const box = document.getElementById("yearlyBars");
+      const data = yearlySales.slice(-5);
+      const max = Math.max(...data.map(x => x.qty), 1);
+
+      if (!data.length) {
+        box.innerHTML = `<div class="empty">년별 판매량 데이터가 없습니다.</div>`;
+        return;
+      }
+
+      box.innerHTML = data.map(item => `
+        <div class="bar-row">
+          <span>${item.year}</span>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${Math.max(4, (item.qty / max) * 100)}%"></div>
+          </div>
+          <b>${fmt(item.qty)}</b>
         </div>
       `).join("");
     }
@@ -338,6 +718,7 @@
       if (!res.ok) throw new Error("데이터 응답 실패");
       inventory = await res.json();
       if (!Array.isArray(inventory)) throw new Error("데이터 형식 오류");
+
       const latestUpdatedAt = inventory.find(x => x.updatedAt)?.updatedAt || "-";
 
       const danger = inventory.filter(x => x.status.includes("즉시")).length;
@@ -359,12 +740,17 @@
       document.getElementById("updatedAt").textContent = `마지막 업데이트: ${latestUpdatedAt}`;
 
       renderUrgentList();
+      setupAnalysisSelect();
       render();
     }
 
     document.getElementById("search").addEventListener("input", render);
     document.getElementById("statusFilter").addEventListener("change", render);
     document.getElementById("sortBy").addEventListener("change", render);
+    document.getElementById("analysisProduct").addEventListener("change", e => {
+      renderAnalysisByName(e.target.value);
+    });
+
     document.getElementById("viewToggle").addEventListener("click", () => {
       compactView = !compactView;
       const btn = document.getElementById("viewToggle");
