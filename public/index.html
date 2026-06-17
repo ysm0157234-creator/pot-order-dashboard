@@ -1,1 +1,290 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>화분·상토 발주 대시보드</title>
+  <style>
+    :root {
+      --ink: #17202a;
+      --muted: #637083;
+      --line: #d9e0e8;
+      --surface: #ffffff;
+      --bg: #f5f7f9;
+      --danger: #c92a2a;
+      --danger-bg: #fff0f0;
+      --warning: #b7791f;
+      --warning-bg: #fff8df;
+      --safe: #2b7a4b;
+      --safe-bg: #eef8f1;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; margin: 0; background: var(--bg); color: var(--ink); }
+    header { background: #20303f; color: #fff; padding: 24px 32px; }
+    h1 { margin: 0 0 8px; font-size: 26px; }
+    .subline { color: #dce6ef; display: flex; gap: 14px; flex-wrap: wrap; font-size: 14px; }
+    .wrap { padding: 24px 32px; }
+    .cards { display: grid; grid-template-columns: repeat(7, minmax(120px, 1fr)); gap: 12px; margin-bottom: 18px; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.04); color: var(--muted); }
+    .card b { display: block; font-size: 22px; margin-top: 8px; color: var(--ink); }
+    .section-title { margin: 22px 0 10px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+    .section-title h2 { margin: 0; font-size: 18px; }
+    .section-title span { color: var(--muted); font-size: 13px; }
+    .urgent-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-bottom: 18px; }
+    .urgent-item { background: var(--surface); border-left: 5px solid var(--danger); border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+    .urgent-item strong { display: block; margin-bottom: 8px; }
+    .urgent-item .meta { color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .toolbar { display: grid; grid-template-columns: minmax(220px, 1fr) 160px 190px auto; gap: 10px; margin-bottom: 14px; align-items: center; }
+    input, select, button { padding: 11px; border: 1px solid #cfd7df; border-radius: 8px; font-size: 14px; background: #fff; color: var(--ink); }
+    button { cursor: pointer; min-width: 96px; }
+    button.active { background: #20303f; color: #fff; border-color: #20303f; }
+    .table-box { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { padding: 11px 10px; border-bottom: 1px solid #edf1f4; text-align: right; white-space: nowrap; font-size: 14px; }
+    th { background: #253545; color: #fff; position: sticky; top: 0; z-index: 1; }
+    th:first-child, td:first-child { text-align: left; }
+    tr.danger { background: var(--danger-bg); }
+    tr.warning { background: var(--warning-bg); }
+    tr.safe { background: var(--safe-bg); }
+    .status { font-weight: 700; }
+    .small { font-size: 12px; color: var(--muted); line-height: 1.45; }
+    .danger-text { color: var(--danger); font-weight: 700; }
+    .hidden { display: none; }
+    .empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 8px; padding: 18px; color: var(--muted); text-align: center; }
+    @media (max-width: 1200px) {
+      .cards { grid-template-columns: repeat(2, 1fr); }
+      .toolbar { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 680px) {
+      header, .wrap { padding: 18px; }
+      .cards, .toolbar { grid-template-columns: 1fr; }
+      .section-title { display: block; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>화분·상토 발주 대시보드</h1>
+    <div class="subline">
+      <span>기준: 작년 같은 시기 판매량 × 성장률 + 안전재고</span>
+      <span id="updatedAt">마지막 업데이트: -</span>
+    </div>
+  </header>
 
+  <div class="wrap">
+    <div class="cards">
+      <div class="card">🔴 즉시발주 <b id="danger">-</b></div>
+      <div class="card">🟡 주의 <b id="warning">-</b></div>
+      <div class="card">🟢 안전 <b id="safe">-</b></div>
+      <div class="card">총 부족 예상 <b id="shortage">-</b></div>
+      <div class="card">🔥 30일 내 품절 <b id="within30">-</b></div>
+      <div class="card">🔥 60일 내 품절 <b id="within60">-</b></div>
+      <div class="card">🔥 90일 내 품절 <b id="within90">-</b></div>
+    </div>
+
+    <div class="section-title">
+      <h2>오늘 처리할 발주</h2>
+      <span>부족수량과 발주 지연일이 큰 품목부터 표시</span>
+    </div>
+    <div id="urgentList" class="urgent-list"></div>
+
+    <div class="toolbar">
+      <input id="search" placeholder="품목명 검색 예: 코스모포트 블랙110L" />
+      <select id="statusFilter">
+        <option value="all">전체</option>
+        <option value="즉시">즉시발주</option>
+        <option value="주의">주의</option>
+        <option value="안전">안전</option>
+        <option value="30">🔥 30일 내 품절</option>
+        <option value="60">🔥 60일 내 품절</option>
+        <option value="90">🔥 90일 내 품절</option>
+      </select>
+      <select id="sortBy">
+        <option value="priority">우선순위 높은 순</option>
+        <option value="stockout">품절예상일 빠른 순</option>
+        <option value="shortage">부족수량 큰 순</option>
+        <option value="delay">발주 지연 큰 순</option>
+        <option value="name">품목명 순</option>
+      </select>
+      <button id="viewToggle" type="button" class="active">간단 보기</button>
+    </div>
+
+    <div class="table-box">
+      <table>
+        <thead>
+          <tr>
+            <th>품목</th>
+            <th>현재고</th>
+            <th>입고예정</th>
+            <th>가용수량</th>
+            <th>예상부족</th>
+            <th>예상소진일</th>
+            <th>품절예상일</th>
+            <th>권장발주일</th>
+            <th>발주지연</th>
+            <th>품절구간</th>
+            <th>상태</th>
+            <th>추천</th>
+            <th class="detail-col">예상 월평균</th>
+            <th class="detail-col">리드타임</th>
+            <th class="detail-col">리드타임 예상판매</th>
+            <th class="detail-col">예상근거</th>
+            <th class="detail-col">추세</th>
+            <th class="detail-col">성장률</th>
+            <th class="detail-col">안전재고</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let inventory = [];
+    let compactView = true;
+    const fmt = (n) => Number(n || 0).toLocaleString();
+    const esc = (v) => String(v ?? "").replace(/[&<>"']/g, ch => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[ch]));
+
+    function rowClass(status) {
+      if (!status) return "";
+      if (status.includes("즉시")) return "danger";
+      if (status.includes("주의")) return "warning";
+      if (status.includes("안전")) return "safe";
+      return "";
+    }
+
+    function render() {
+      const keyword = document.getElementById("search").value.trim();
+      const filter = document.getElementById("statusFilter").value;
+      const sortBy = document.getElementById("sortBy").value;
+      const tbody = document.getElementById("tbody");
+
+      const rows = inventory.filter(item => {
+        const matchKeyword = !keyword || item.productName.includes(keyword);
+
+        let matchStatus = true;
+        if (filter !== "all") {
+          if (filter === "30") matchStatus = item.stockoutGroup === "🔥 30일 내 품절";
+          else if (filter === "60") matchStatus = item.stockoutGroup === "🔥 60일 내 품절";
+          else if (filter === "90") matchStatus = item.stockoutGroup === "🔥 90일 내 품절";
+          else matchStatus = item.status.includes(filter);
+        }
+
+        return matchKeyword && matchStatus;
+      }).sort((a, b) => {
+        if (sortBy === "shortage") return b.shortage - a.shortage;
+        if (sortBy === "delay") return b.orderDelayDays - a.orderDelayDays;
+        if (sortBy === "stockout") return a.daysLeft - b.daysLeft;
+        if (sortBy === "name") return a.productName.localeCompare(b.productName, "ko");
+        return b.priorityScore - a.priorityScore;
+      });
+
+      document.querySelectorAll(".detail-col").forEach(el => {
+        el.classList.toggle("hidden", compactView);
+      });
+
+      tbody.innerHTML = rows.map(item => `
+        <tr class="${rowClass(item.status)}">
+          <td>${esc(item.productName)}</td>
+          <td>${fmt(item.currentStock)}</td>
+          <td>${fmt(item.incomingStock)}</td>
+          <td>${fmt(item.availableStock)}</td>
+          <td>${fmt(item.shortage)}</td>
+          <td>${item.daysLeft === 9999 ? "-" : fmt(item.daysLeft) + "일"}</td>
+          <td>${item.stockoutDate || "-"}</td>
+          <td>${item.recommendedOrderDate || "-"}</td>
+          <td>${item.orderDelayDays > 0 ? `<span class="danger-text">D+${fmt(item.orderDelayDays)}</span>` : "-"}</td>
+          <td>${esc(item.stockoutGroup || "안전")}</td>
+          <td class="status">${esc(item.status)}</td>
+          <td>${esc(item.action)}</td>
+          <td class="detail-col ${compactView ? "hidden" : ""}">${fmt(item.monthlyForecast)}</td>
+          <td class="detail-col ${compactView ? "hidden" : ""}">${fmt(item.leadTime)}일</td>
+          <td class="detail-col ${compactView ? "hidden" : ""}">${fmt(item.seasonalForecast)}</td>
+          <td class="small detail-col ${compactView ? "hidden" : ""}">${esc(item.forecastDetail || "-")}</td>
+          <td class="small detail-col ${compactView ? "hidden" : ""}">${esc(item.trendSummary || "-")}</td>
+          <td class="detail-col ${compactView ? "hidden" : ""}">${item.growthRate}%</td>
+          <td class="detail-col ${compactView ? "hidden" : ""}">${fmt(item.safetyStock)}</td>
+        </tr>
+      `).join("");
+
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="19" class="empty">조건에 맞는 품목이 없습니다.</td></tr>`;
+      }
+    }
+
+    function renderUrgentList() {
+      const urgentList = document.getElementById("urgentList");
+      const urgentItems = inventory
+        .filter(item => item.status.includes("즉시"))
+        .sort((a, b) => b.priorityScore - a.priorityScore)
+        .slice(0, 6);
+
+      if (!urgentItems.length) {
+        urgentList.innerHTML = `<div class="empty">오늘 즉시 발주할 품목이 없습니다.</div>`;
+        return;
+      }
+
+      urgentList.innerHTML = urgentItems.map(item => `
+        <div class="urgent-item">
+          <strong>${esc(item.productName)}</strong>
+          <div class="meta">
+            부족 ${fmt(item.shortage)}개 · 품절예상 ${item.stockoutDate || "-"} · 권장발주 ${item.recommendedOrderDate || "-"}
+            ${item.orderDelayDays > 0 ? `<br><span class="danger-text">발주 ${fmt(item.orderDelayDays)}일 지연</span>` : ""}
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function load() {
+      const res = await fetch("/api/inventory");
+      if (!res.ok) throw new Error("데이터 응답 실패");
+      inventory = await res.json();
+      if (!Array.isArray(inventory)) throw new Error("데이터 형식 오류");
+      const latestUpdatedAt = inventory.find(x => x.updatedAt)?.updatedAt || "-";
+
+      const danger = inventory.filter(x => x.status.includes("즉시")).length;
+      const warning = inventory.filter(x => x.status.includes("주의")).length;
+      const safe = inventory.filter(x => x.status.includes("안전")).length;
+      const totalShortage = inventory.reduce((sum, x) => sum + Number(x.shortage || 0), 0);
+
+      const within30 = inventory.filter(x => x.stockoutGroup === "🔥 30일 내 품절").length;
+      const within60 = inventory.filter(x => x.stockoutGroup === "🔥 60일 내 품절").length;
+      const within90 = inventory.filter(x => x.stockoutGroup === "🔥 90일 내 품절").length;
+
+      document.getElementById("danger").textContent = fmt(danger);
+      document.getElementById("warning").textContent = fmt(warning);
+      document.getElementById("safe").textContent = fmt(safe);
+      document.getElementById("shortage").textContent = fmt(totalShortage);
+      document.getElementById("within30").textContent = fmt(within30);
+      document.getElementById("within60").textContent = fmt(within60);
+      document.getElementById("within90").textContent = fmt(within90);
+      document.getElementById("updatedAt").textContent = `마지막 업데이트: ${latestUpdatedAt}`;
+
+      renderUrgentList();
+      render();
+    }
+
+    document.getElementById("search").addEventListener("input", render);
+    document.getElementById("statusFilter").addEventListener("change", render);
+    document.getElementById("sortBy").addEventListener("change", render);
+    document.getElementById("viewToggle").addEventListener("click", () => {
+      compactView = !compactView;
+      const btn = document.getElementById("viewToggle");
+      btn.textContent = compactView ? "간단 보기" : "상세 보기";
+      btn.classList.toggle("active", compactView);
+      render();
+    });
+
+    load().catch(err => {
+      console.error(err);
+      alert("데이터 불러오기 실패. Render 로그 확인");
+    });
+  </script>
+</body>
+</html>
