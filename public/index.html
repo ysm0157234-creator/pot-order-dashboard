@@ -256,6 +256,7 @@
       padding: 18px;
       min-height: 480px;
       overflow-x: auto;
+      position: relative;
     }
 
     .chart-title-row {
@@ -282,6 +283,7 @@
 
     .chart-wrap {
       min-width: 980px;
+      position: relative;
     }
 
     .chart {
@@ -291,6 +293,29 @@
       background: #fff;
       border: 1px solid #bfc7d2;
       border-radius: 0;
+    }
+
+    .chart-tooltip {
+      position: fixed;
+      z-index: 999;
+      min-width: 150px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 800;
+      pointer-events: none;
+      display: none;
+      line-height: 1.55;
+    }
+
+    .chart-tooltip b {
+      display: block;
+      color: var(--brand);
+      margin-bottom: 4px;
+      font-size: 13px;
     }
 
     .legend {
@@ -574,6 +599,7 @@
           <span><i class="green"></i> 올해 판매 흐름</span>
         </div>
         <div id="barChart" class="bar-list hidden"></div>
+        <div id="chartTooltip" class="chart-tooltip"></div>
       </div>
     </div>
 
@@ -673,13 +699,33 @@
       return { current, previous };
     }
 
+    function showTooltip(evt, html) {
+      const tooltip = document.getElementById("chartTooltip");
+      tooltip.innerHTML = html;
+      tooltip.style.display = "block";
+      tooltip.style.left = `${evt.clientX + 14}px`;
+      tooltip.style.top = `${evt.clientY + 14}px`;
+    }
+
+    function moveTooltip(evt) {
+      const tooltip = document.getElementById("chartTooltip");
+      if (tooltip.style.display === "block") {
+        tooltip.style.left = `${evt.clientX + 14}px`;
+        tooltip.style.top = `${evt.clientY + 14}px`;
+      }
+    }
+
+    function hideTooltip() {
+      document.getElementById("chartTooltip").style.display = "none";
+    }
+
     function showCompareLine(item) {
       const svg = document.getElementById("lineChart");
       const bars = document.getElementById("barChart");
       const legend = document.getElementById("legend");
 
       document.getElementById("analysisTitle").textContent = "월별 판매량";
-      document.getElementById("chartHint").textContent = "파란색: 올해 / 회색: 작년";
+      document.getElementById("chartHint").textContent = "점에 마우스를 올리면 상세 판매량 표시";
       svg.classList.remove("hidden");
       legend.classList.remove("hidden");
       bars.classList.add("hidden");
@@ -717,12 +763,12 @@
         return found ? found.qty : null;
       }
 
-      function pointsFor(data) {
+      function pointsFor(data, type) {
         return months
           .map(month => {
             const qty = valueAt(data, month);
             if (qty === null) return null;
-            return { month, qty, x: xForMonth(month), y: yForValue(qty) };
+            return { month, qty, type, x: xForMonth(month), y: yForValue(qty) };
           })
           .filter(Boolean);
       }
@@ -731,8 +777,8 @@
         return points.map(p => `${p.x},${p.y}`).join(" ");
       }
 
-      const currentPoints = pointsFor(current);
-      const previousPoints = pointsFor(previous);
+      const currentPoints = pointsFor(current, "올해");
+      const previousPoints = pointsFor(previous, "작년");
 
       const yTicks = [0, .25, .5, .75, 1].map(rate => {
         const value = Math.round(max * rate);
@@ -754,9 +800,24 @@
       }).join("");
 
       function circles(points, color) {
-        return points.map(p => `
-          <circle cx="${p.x}" cy="${p.y}" r="5.2" fill="${color}" stroke="#fff" stroke-width="2"></circle>
-        `).join("");
+        return points.map(p => {
+          const currentQty = valueAt(current, p.month);
+          const previousQty = valueAt(previous, p.month);
+          const year = p.type === "올해" ? new Date().getFullYear() : new Date().getFullYear() - 1;
+
+          return `
+            <circle
+              class="data-point"
+              cx="${p.x}"
+              cy="${p.y}"
+              r="6"
+              fill="${color}"
+              stroke="#fff"
+              stroke-width="2"
+              data-tooltip="<b>${year}년 ${p.month}월</b>${p.type} 판매량: ${fmt(p.qty)}개<br>올해: ${currentQty === null ? "-" : fmt(currentQty) + "개"}<br>작년: ${previousQty === null ? "-" : fmt(previousQty) + "개"}"
+            ></circle>
+          `;
+        }).join("");
       }
 
       svg.innerHTML = `
@@ -777,6 +838,12 @@
           return `<text x="${p.x}" y="${Math.max(16, p.y - 12)}" text-anchor="middle" fill="var(--brand)" font-size="12" font-weight="800">${fmt(p.qty)}</text>`;
         }).join("")}
       `;
+
+      svg.querySelectorAll(".data-point").forEach(point => {
+        point.addEventListener("mouseenter", e => showTooltip(e, point.dataset.tooltip));
+        point.addEventListener("mousemove", moveTooltip);
+        point.addEventListener("mouseleave", hideTooltip);
+      });
     }
 
     function showBars(data, title, valueKey = "qty", valueSuffix = "") {
@@ -788,6 +855,7 @@
       svg.classList.add("hidden");
       legend.classList.add("hidden");
       bars.classList.remove("hidden");
+      hideTooltip();
 
       const rows = data || [];
       const max = Math.max(...rows.map(x => Number(x[valueKey] || 0)), 1);
@@ -985,6 +1053,7 @@
         document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
         btn.classList.add("active");
         activeAnalysisView = btn.dataset.view;
+        hideTooltip();
         renderAnalysis();
       });
     });
